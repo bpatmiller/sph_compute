@@ -1,5 +1,5 @@
-#ifndef RENDER_OBJECT_H
-#define RENDER_OBJECT_H
+#ifndef VAO_H
+#define VAO_H
 
 #include <glad/glad.h>
 

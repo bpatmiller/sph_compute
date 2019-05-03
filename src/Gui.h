@@ -51,7 +51,7 @@ public:
   bool cold = false;
   int loopy = 0;
   glm::vec3 momentum = glm::vec3(0);
-  glm::vec3 light_position = glm::vec3(-1.0f, 4.0f, 0.5f);
+  glm::vec3 light_position = glm::vec3(-1.0f, 4.0f, 0.7f);
 
   // camera properties
   // glm::vec3 eye = glm::vec3(0, 1.1, -0.5);
