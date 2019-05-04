@@ -10,16 +10,29 @@ void Geometry::draw() {
 
 bool Geometry::intersects(Geometry &g) {
   std::vector<glm::vec3> isects;
+  glm::mat4 transformation = translation * glm::mat4_cast(orientation);
 
   for (auto self_face : indices) {
     for (auto other_face : g.indices) {
       // intersect two triangles
-      bool hit = intersect_triangles(
-          vertices[self_face[0]], vertices[self_face[1]],
-          vertices[self_face[2]], g.vertices[other_face[0]],
-          g.vertices[other_face[1]], g.vertices[other_face[2]]);
-      if (hit)
-        isects.emplace_back(glm::vec3(1));
+      glm::vec3 v1 =
+          glm::vec3(transformation * glm::vec4(vertices[self_face[0]], 1));
+      glm::vec3 v2 =
+          glm::vec3(transformation * glm::vec4(vertices[self_face[1]], 1));
+      glm::vec3 v3 =
+          glm::vec3(transformation * glm::vec4(vertices[self_face[2]], 1));
+      glm::vec3 v4 =
+          glm::vec3(transformation * glm::vec4(g.vertices[other_face[0]], 1));
+      glm::vec3 v5 =
+          glm::vec3(transformation * glm::vec4(g.vertices[other_face[1]], 1));
+      glm::vec3 v6 =
+          glm::vec3(transformation * glm::vec4(g.vertices[other_face[2]], 1));
+
+      bool hit = intersect_triangles(v1, v2, v3, v4, v5, v6);
+      if (hit) {
+        isects.emplace_back((v1 + v2 + v3) / 3.0f);
+        break;
+      }
     }
   }
   // print results
@@ -28,6 +41,7 @@ bool Geometry::intersects(Geometry &g) {
       std::cout << glm::to_string(b) << std::endl;
     }
   }
+  std::cout << "AHHH" << std::endl;
   return !isects.empty();
 }
 
@@ -74,9 +88,8 @@ bool Geometry::edge_intersect(std::vector<glm::vec2> e1,
   }
   return false;
 }
-bool Geometry::intersect_triangles(glm::vec3 v1, glm::vec3 v2,
-                                        glm::vec3 v3, glm::vec3 v4,
-                                        glm::vec3 v5, glm::vec3 v6) {
+bool Geometry::intersect_triangles(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3,
+                                   glm::vec3 v4, glm::vec3 v5, glm::vec3 v6) {
 
   // check if T1 is on one side of pi2
   glm::vec3 N2 = glm::cross((v5 - v4), (v6 - v4));
@@ -193,4 +206,4 @@ bool Geometry::intersect_triangles(glm::vec3 v1, glm::vec3 v2,
   }
 
   return false;
-                                        }
+}

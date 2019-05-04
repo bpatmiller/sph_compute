@@ -36,7 +36,7 @@ struct Geometry {
   bool edge_intersect(std::vector<glm::vec2> e1, std::vector<glm::vec2> e2);
   bool intersects(Geometry &g);
   bool intersect_triangles(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3,
-                                glm::vec3 v4, glm::vec3 v5, glm::vec3 v6);
+                           glm::vec3 v4, glm::vec3 v5, glm::vec3 v6);
 };
 
 #endif
