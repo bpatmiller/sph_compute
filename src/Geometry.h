@@ -10,10 +10,13 @@ struct Geometry {
   VertexArr VAO;
   std::vector<glm::vec3> vertices;
   std::vector<glm::uvec3> indices;
+  std::vector<glm::vec3> collisions;
   glm::fquat orientation;
   glm::mat4 translation;
   glm::vec3 center_of_mass;
   bool dirty;
+  bool dynamic;
+  float mass;
 
   Geometry(std::vector<glm::vec3> v, std::vector<glm::uvec3> in) {
     vertices = v;
@@ -29,6 +32,8 @@ struct Geometry {
     }
     center_of_mass /= vertices.size();
     dirty = true;
+    dynamic = true;
+    mass = 1.0f;
   }
 
   void draw();

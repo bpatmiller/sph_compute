@@ -12,19 +12,16 @@ struct Scene {
     for (auto g : geometries) {
       g->dirty = true;
     }
-
-    std::cout << "intersecting all" << std::endl;
     for (auto g : geometries) {
+      if (! g->dynamic)
+        continue;
       for (auto other_g : geometries) {
-        if (!g->dirty || !other_g->dirty)
-          continue;
         if (g == other_g)
           continue;
         if (g->intersects(*other_g)) {
           //   std::cout << "intersect!\n";
         }
       }
-      g->dirty = false;
     }
   }
 };

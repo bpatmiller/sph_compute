@@ -9,7 +9,7 @@ void Geometry::draw() {
 }
 
 bool Geometry::intersects(Geometry &g) {
-  std::vector<glm::vec3> isects;
+  collisions.clear();
   glm::mat4 transformation = translation * glm::mat4_cast(orientation);
 
   for (auto self_face : indices) {
@@ -30,19 +30,18 @@ bool Geometry::intersects(Geometry &g) {
 
       bool hit = intersect_triangles(v1, v2, v3, v4, v5, v6);
       if (hit) {
-        isects.emplace_back((v1 + v2 + v3) / 3.0f);
+        collisions.emplace_back((v1 + v2 + v3) / 3.0f);
         break;
       }
     }
   }
   // print results
-  if (!isects.empty()) {
-    for (auto b : isects) {
+  if (!collisions.empty()) {
+    for (auto b : collisions) {
       std::cout << glm::to_string(b) << std::endl;
     }
   }
-  std::cout << "AHHH" << std::endl;
-  return !isects.empty();
+  return !collisions.empty();
 }
 
 float Geometry::vec2_cross(glm::vec2 v1, glm::vec2 v2) {

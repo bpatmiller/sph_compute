@@ -37,12 +37,13 @@ int main(int argc, char *argv[]) {
   Geometry cube_geom(cube_vertices, cube_indices);
   scene.add(&cube_geom);
 
-  std::vector<glm::vec3> plane_vertices = {{-2.0f, -0.1f, -2.0f},
-                                           {-2.0f, -0.1f, 2.0f},
-                                           {2.0, -0.1f, -2.0f},
-                                           {2.0f, -0.1f, 2.0f}};
+  std::vector<glm::vec3> plane_vertices = {{-2.0f, -1.0f, -2.0f},
+                                           {-2.0f, -1.0f, 2.0f},
+                                           {2.0, -1.0f, -2.0f},
+                                           {2.0f, -1.0f, 2.0f}};
   std::vector<glm::uvec3> plane_indices = {{0, 1, 2}, {1, 3, 2}};
   Geometry plane_geom(plane_vertices, plane_indices);
+  plane_geom.dynamic = false;
   scene.add(&plane_geom);
 
   // draw loop
