@@ -14,12 +14,12 @@ bool Geometry::intersects(Geometry &g) {
   for (auto self_face : indices) {
     for (auto other_face : g.indices) {
       // intersect two triangles
-      glm::vec4 hit = intersect_triangles(
+      bool hit = intersect_triangles(
           vertices[self_face[0]], vertices[self_face[1]],
           vertices[self_face[2]], g.vertices[other_face[0]],
           g.vertices[other_face[1]], g.vertices[other_face[2]]);
-      if (hit[3] != 0)
-        isects.emplace_back(glm::vec3(hit[0], hit[1], hit[2]));
+      if (hit)
+        isects.emplace_back(glm::vec3(1));
     }
   }
   // print results
@@ -74,7 +74,7 @@ bool Geometry::edge_intersect(std::vector<glm::vec2> e1,
   }
   return false;
 }
-glm::vec4 Geometry::intersect_triangles(glm::vec3 v1, glm::vec3 v2,
+bool Geometry::intersect_triangles(glm::vec3 v1, glm::vec3 v2,
                                         glm::vec3 v3, glm::vec3 v4,
                                         glm::vec3 v5, glm::vec3 v6) {
 
@@ -91,7 +91,7 @@ glm::vec4 Geometry::intersect_triangles(glm::vec3 v1, glm::vec3 v2,
   bool all_negative = ((dv1 < 0) && (dv2 < 0) && (dv3 < 0));
 
   if (t1_not_on_plane && (all_positive || all_negative))
-    return glm::vec4(0);
+    return false;
 
   // check if T2 is on one side of pi1
   glm::vec3 N1 = glm::cross((v2 - v1), (v3 - v1));
@@ -106,7 +106,7 @@ glm::vec4 Geometry::intersect_triangles(glm::vec3 v1, glm::vec3 v2,
   all_negative = ((dv4 < 0) && (dv5 < 0) && (dv6 < 0));
 
   if (t2_not_on_plane && (all_positive || all_negative))
-    return glm::vec4(0);
+    return false;
 
   // if the triangles are coplanar
   if (!(t1_not_on_plane || t2_not_on_plane)) {
@@ -163,10 +163,7 @@ glm::vec4 Geometry::intersect_triangles(glm::vec3 v1, glm::vec3 v2,
       for (auto e_2 : edges_2) {
         bool e_intersect = edge_intersect(e_1, e_2); //, vec2_i);
         if (e_intersect)
-          // convert vec2 i to 3d and set i
-          // i = 3d converted vec2
-          // FIXME return correct hit points
-          return glm::vec4(1);
+          return true;
       }
     }
   }
@@ -190,11 +187,10 @@ glm::vec4 Geometry::intersect_triangles(glm::vec3 v1, glm::vec3 v2,
 
     // if intervals overlap
     if (glm::isnan(t1) || glm::isnan(t2) || glm::isnan(t3) || glm::isnan(t4))
-      return glm::vec4(0);
+      return false;
     if (glm::max(t1, t3) < glm::min(t2, t4))
-      // FIXME return correct position
-      return glm::vec4(1);
+      return true;
   }
 
-  return glm::vec4(0);
-}
+  return false;
+                                        }
