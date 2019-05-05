@@ -18,9 +18,10 @@ void main() {
   vec3 color = 0.1 * am + bp_shade * df;
   fragment_color = vec4(color, 1);
 
-  float wireframe_min =
-      scale * min(triangle_coords.x, min(triangle_coords.y, triangle_coords.z));
+  // float wireframe_min =
+  //     scale * min(triangle_coords.x, min(triangle_coords.y,
+  //     triangle_coords.z));
 
-  if (wireframe_min < 0.001)
-    fragment_color = vec4(0, 1, 0, 1);
+  // if (wireframe_min < 0.001)
+  //   fragment_color = vec4(0, 1, 0, 1);
 }

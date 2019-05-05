@@ -46,7 +46,8 @@ int main(int argc, char *argv[]) {
     fluid_shader.setVec3("light_position", g.light_position);
     fluid_shader.setVec3("camera_position", g.eye);
 
-    // container.update_instances();
+    container.step_physics(1);
+    container.update_instances();
     container.draw();
 
     g.swapPoll();
