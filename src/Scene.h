@@ -13,7 +13,7 @@ struct Scene {
       g->dirty = true;
     }
     for (auto g : geometries) {
-      if (! g->dynamic)
+      if (!g->dynamic)
         continue;
       for (auto other_g : geometries) {
         if (g == other_g)

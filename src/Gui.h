@@ -34,28 +34,17 @@ public:
   std::map<int, bool> keyHeld;
 
   glm::vec2 window_dimensions = glm::vec2(1, 1);
-  bool fxaa = true;
-  bool scary = false;
-  float resolution_scale = 4.0f;
-  float rotation_angle = 0.25f;
-  glm::mat2 rotation_matrix = glm::mat2(1.0f);
 
   int current_x = -1;
   int current_y = -1;
   bool mouse_pressed = false;
   bool on_ground = false;
   bool flying = false;
-  bool colw = false;
-  bool cols = false;
-  bool cola = false;
-  bool cold = false;
-  int loopy = 0;
-  glm::vec3 momentum = glm::vec3(0);
+
   glm::vec3 light_position = glm::vec3(-1.0f, 4.0f, 0.7f);
 
   // camera properties
-  // glm::vec3 eye = glm::vec3(0, 1.1, -0.5);
-  glm::vec3 eye = glm::vec3(0, 0, 0.5);
+  glm::vec3 eye = glm::vec3(-0.0, 1.0, 2.5);
   glm::quat orientation = glm::quat(glm::mat4(1.0f));
   glm::vec3 fdir = FORWARD;
   glm::vec3 sdir = SIDE;
@@ -65,7 +54,6 @@ public:
   // camera uniforms
   glm::mat4 view_matrix;
   glm::mat4 projection_matrix;
-  glm::mat4 model_matrix;
 
   Gui(int w, int h, std::string title) {
     window_width = w;

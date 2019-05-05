@@ -8,11 +8,11 @@ void Gui::clearRender() {
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glEnable(GL_DEPTH_TEST);
-  // glEnable(GL_CULL_FACE);
+  glEnable(GL_CULL_FACE);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glDepthFunc(GL_LESS);
-  // glCullFace(GL_BACK);
+  glCullFace(GL_BACK);
 }
 
 void Gui::updateMatrices() {
@@ -24,8 +24,7 @@ void Gui::updateMatrices() {
   translate = glm::translate(translate, -eye);
   view_matrix = glm::mat4_cast(orientation) * translate;
   projection_matrix = glm::perspective(
-      glm::radians(80.0f), ((float)window_width) / window_height, 0.1f, 20.f);
-  model_matrix = glm::mat4(1.0f);
+      glm::radians(80.0f), ((float)window_width) / window_height, 0.01f, 20.f);
 }
 
 void Gui::swapPoll() {
