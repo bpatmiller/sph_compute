@@ -4,6 +4,7 @@
 #include "Particle.h"
 #include "VAO.h"
 #include <glm/gtx/transform.hpp>
+#include <iostream>
 #include <unordered_map>
 #include <vector>
 
@@ -30,20 +31,22 @@ struct ParticleContainer {
   float viscosity = 1.3;
   float surface_tension_coef = 8.0;
 
-  ParticleContainer(glm::vec3 min, glm::vec3 max, float step, float radius) {
+  ParticleContainer(glm::vec3 min, glm::vec3 max, float radius) {
     grid_cell_size = radius * 4;
     smoothing_radius = grid_cell_size;
+
+    // number of grid subdivisions
+    grid_n = glm::pow((max.x - min.x) / (radius * 2), 3);
 
     // load sphere mesh
     create_sphere(radius);
     // generate initial positions
-    for (float x = min.x; x <= max.x; x += step) {
-      for (float y = min.y; y <= max.y; y += step) {
-        for (float z = min.z; z <= max.z; z += step) {
+    for (float x = min.x; x <= max.x; x += radius * 2) {
+      for (float y = min.y; y <= max.y; y += radius * 2) {
+        for (float z = min.z; z <= max.z; z += radius * 2) {
           Particle p = Particle(glm::vec3(x, y, z));
           particles.emplace_back(p);
           positions.emplace_back(glm::vec4(p.position, p.density));
-          grid_n++;
         }
       }
     }

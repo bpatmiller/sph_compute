@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <unordered_map>
 
 int window_width = 640;
 int window_height = 480;
@@ -26,11 +27,10 @@ int main(int argc, char *argv[]) {
                       "src/shaders/cube.frag");
 
   // create vector of particles
-  glm::vec3 min(-1);
+  glm::vec3 min(0);
   glm::vec3 max(1);
-  float step = 0.2;
-  float radius = 0.1;
-  ParticleContainer container(min, max, step, radius);
+  float radius = 0.05;
+  ParticleContainer container(min, max, radius);
 
   // draw loop
   while (!glfwWindowShouldClose(g.window)) {

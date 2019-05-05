@@ -16,6 +16,7 @@ struct Particle {
     position = p;
     pressure = 0;
     density = 0;
+    neighbors.clear();
   }
 };
 

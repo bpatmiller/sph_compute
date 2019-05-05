@@ -3,8 +3,8 @@
 #include <math.h>
 
 void ParticleContainer::create_sphere(float Radius) {
-  int Stacks = 6;
-  int Slices = 6;
+  int Stacks = 10;
+  int Slices = 10;
 
   for (int i = 0; i <= Stacks; ++i) {
     float V = i / (float)Stacks;
@@ -50,26 +50,32 @@ int ParticleContainer::get_cell_hash(glm::vec3 p) {
 void ParticleContainer::find_neighboors() {
   //   build unordered multimap
   block_hashmap.clear();
-  for (auto p : particles) {
-    block_hashmap.insert(std::make_pair(get_cell_hash(p.position), &p));
+  for (uint i = 0; i < particles.size(); i++) {
+    Particle &p = particles[i];
+    block_hashmap.insert({get_cell_hash(p.position), &p});
   }
 
   for (uint i = 0; i < particles.size(); i++) {
     Particle &p = particles[i];
+    p.neighbors.clear();
+
     for (int i = -1; i <= 1; i++) {
       for (int j = -1; j <= 1; j++) {
         for (int k = -1; k <= 1; k++) {
           glm::vec3 block_position =
-              p.position + glm::vec3(i, j, k) * grid_cell_size;
+              p.position + glm::fvec3(i, j, k) * grid_cell_size;
           int block_hash = get_cell_hash(block_position);
           // get the neighbors that have the same hash
-          p.neighbors.clear();
           auto iter = block_hashmap.equal_range(block_hash);
-          for (auto it = iter.first; it != iter.second; it++)
-            if (glm::distance(p.position, it->second->position) <
-                smoothing_radius) {
+          for (auto it = iter.first; it != iter.second; it++) {
+            // std::cout << glm::distance(p.position, it->second->position)
+            //           << std::endl;
+            if (&p != it->second &&
+                glm::distance(p.position, it->second->position) <=
+                    smoothing_radius) {
               p.neighbors.emplace_back(it->second);
             }
+          }
         }
       }
     }
@@ -92,18 +98,13 @@ void ParticleContainer::compute_density() {
       p.density += mass * smoothing_kernel(
                               glm::distance(p.position, neighbor->position));
     }
-    if (p.neighbors.empty()) {
-      p.density = 0.0;
-    } else {
-      p.density = 1.0;
-    }
   }
 }
 //   void compute_normals();
 //   void compute_pressure();
 void ParticleContainer::compute_forces() {
   for (uint i = 0; i < particles.size(); i++) {
-    // particles[i].force = glm::vec3(0, -9.8, 0);
+    // particles[i].force = glm::vec3(0, -1.8, 0);
   }
 }
 void ParticleContainer::compute_velocity() {
