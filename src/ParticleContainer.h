@@ -23,13 +23,14 @@ struct ParticleContainer {
   float particle_radius;
   float smoothing_radius;
   int grid_n = 0;
-  float timestep = 0.01;
+  float timestep = 0.0000001;
 
   float mass = 28.0;
   float rest_density = 59.0;
   float gas_constant = 0.000001;
   float viscosity = 1.3;
   float surface_tension_coef = 8.0;
+  float stiffness = 7.0;
 
   ParticleContainer(glm::vec3 min, glm::vec3 max, float radius) {
     grid_cell_size = radius * 4;
@@ -65,6 +66,7 @@ struct ParticleContainer {
   // fluid sim helper stems
   int get_cell_hash(glm::vec3);
   float smoothing_kernel(float dist);
+  glm::vec3 smoothing_kernel_gradient(glm::vec3 r);
   // fluid simulation steps
   void step_physics(int n);
   void find_neighboors();

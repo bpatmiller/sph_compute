@@ -19,7 +19,7 @@ void main() {
 
   // vec3 am = vec3(1, 1, 1);
   // vec3 color = 0.1 * am + bp_shade *
-  vec3 color = mix(gray, blue, density / 2000);
+  vec3 color = mix(gray, blue, density / 100);
   fragment_color = vec4(color, 1);
 
   // float wireframe_min =
