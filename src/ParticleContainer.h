@@ -12,7 +12,7 @@ struct ParticleContainer {
   glm::mat4 model_matrix;
   std::vector<glm::vec3> vertices;
   std::vector<glm::uvec3> face_indices;
-  std::vector<glm::vec3> positions;
+  std::vector<glm::vec4> positions;
 
   std::vector<Particle> particles;
   std::unordered_multimap<int, Particle *> block_hashmap;
@@ -21,6 +21,7 @@ struct ParticleContainer {
   float grid_cell_size;
   float particle_radius;
   float smoothing_radius;
+  int grid_n = 0;
   float timestep = 0.01;
 
   float mass = 28.0;
@@ -41,7 +42,8 @@ struct ParticleContainer {
         for (float z = min.z; z <= max.z; z += step) {
           Particle p = Particle(glm::vec3(x, y, z));
           particles.emplace_back(p);
-          positions.emplace_back(p.position);
+          positions.emplace_back(glm::vec4(p.position, p.density));
+          grid_n++;
         }
       }
     }
@@ -49,7 +51,7 @@ struct ParticleContainer {
     VAO.vb.bindVertices(vertices);
     VAO.ib.bindVertices(positions);
     VAO.setLayout({3}, false);
-    VAO.setLayout({3}, true);
+    VAO.setLayout({4}, true);
     // define cube scale
     model_matrix = glm::scale(glm::vec3(1));
   }
@@ -59,6 +61,7 @@ struct ParticleContainer {
 
   // fluid sim helper stems
   int get_cell_hash(glm::vec3);
+  float smoothing_kernel(float dist);
   // fluid simulation steps
   void step_physics(int n);
   void find_neighboors();

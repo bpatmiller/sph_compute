@@ -8,11 +8,14 @@ uniform mat4 model;
 uniform vec3 light_position;
 uniform vec3 camera_position;
 
+in float[] d;
+
 out vec3 normal;
 out vec3 light_direction;
 out vec3 view_direction;
 out vec3 triangle_coords;
 out float scale;
+out float density;
 
 void main()
 {
@@ -29,6 +32,7 @@ void main()
 		gl_Position = mvp * gl_in[n].gl_Position;
 		triangle_coords = vec3( 0.0, 0.0, 0.0 );
 		triangle_coords[n] = 1.0;
+		density = d[n];
 		EmitVertex();
 	}
 	EndPrimitive();
