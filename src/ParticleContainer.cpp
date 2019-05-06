@@ -20,7 +20,7 @@ void ParticleContainer::draw() {
 void ParticleContainer::update_instances() {
   positions.clear();
   for (auto p : particles) {
-    positions.emplace_back(glm::vec4(p.position, glm::length(p.force)));
+    positions.emplace_back(glm::vec4(p.position, glm::length(p.velocity)));
   }
   VAO.ib.bindVertices(positions);
 }
@@ -145,8 +145,6 @@ void ParticleContainer::compute_forces() {
           -surface_tension_coef * mass * (p.normal - n->normal);
       p.force += k * (cohesion + curvature);
     }
-    // manually tune params
-    p.force /= 10;
     // clamp for reasonable measure and add gravity
     p.force = glm::clamp(p.force, -100.0f, 100.0f);
     p.force += glm::vec3(0, -9.8, 0);
@@ -192,10 +190,8 @@ void ParticleContainer::compute_position() {
 void ParticleContainer::step_physics(int n) {
   for (int i = 0; i < n; i++) {
     find_neighboors();
-    // compute_density();
     compute_pressure();
     compute_forces();
-
     compute_position();
   }
 }
