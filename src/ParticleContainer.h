@@ -30,7 +30,7 @@ struct ParticleContainer {
   float viscosity = 1.3;
   float surface_tension_coef = 8.0;
   float stiffness = 7.0;
-  float damping = 0.1;
+  float damping = 0.25;
 
   ParticleContainer(glm::vec3 min, glm::vec3 max, float radius) {
     grid_cell_size = radius * 4;
@@ -68,6 +68,7 @@ struct ParticleContainer {
   float smoothing_kernel(float dist);
   glm::vec3 smoothing_kernel_gradient(glm::vec3 r);
   float smoothing_kernel_gradient_squared(glm::vec3 r);
+  float C(float r);
   // fluid simulation steps
   void step_physics(int n);
   void find_neighboors();

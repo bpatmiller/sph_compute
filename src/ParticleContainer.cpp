@@ -69,11 +69,8 @@ void ParticleContainer::find_neighboors() {
           // get the neighbors that have the same hash
           auto iter = block_hashmap.equal_range(block_hash);
           for (auto it = iter.first; it != iter.second; it++) {
-            // std::cout << glm::distance(p.position, it->second->position)
-            //           << std::endl;
-            if (&p != it->second &&
-                glm::distance(p.position, it->second->position) <=
-                    smoothing_radius) {
+            float dist = glm::distance(p.position, it->second->position);
+            if (0 < dist && dist < smoothing_radius) {
               p.neighbors.emplace_back(it->second);
             }
           }
@@ -110,12 +107,35 @@ void ParticleContainer::compute_density() {
     }
   }
 }
-//   void compute_normals();
+
+float ParticleContainer::C(float r) {
+  if (2 * r > smoothing_radius && r <= smoothing_radius) {
+    float coef = (32 / (3.141592 * glm::pow(smoothing_radius, 9)));
+    return coef * glm::pow(smoothing_radius - r, 3) * glm::pow(r, 3);
+  } else if (r > 0 && 2 * r <= smoothing_radius) {
+    float coef = (32 / (3.141592 * glm::pow(smoothing_radius, 9)));
+    return coef * 2 * glm::pow(smoothing_radius - r, 3) * glm::pow(r, 3) -
+           glm::pow(smoothing_radius, 6) / 64;
+  }
+  return 0;
+}
+
+void ParticleContainer::compute_normals() {
+  for (uint i = 0; i < particles.size(); i++) {
+    Particle &p = particles[i];
+    p.normal = glm::vec3(0);
+    for (auto n : p.neighbors) {
+      p.normal += (mass / n->density) *
+                  smoothing_kernel_gradient(p.position - n->position);
+    }
+    p.normal *= smoothing_radius;
+  }
+}
+
 void ParticleContainer::compute_pressure() {
   for (uint i = 0; i < particles.size(); i++) {
     Particle &p = particles[i];
     p.pressure = gas_constant * (p.density - rest_density);
-    // gas_constant * (glm::pow(p.density / rest_density, stiffness) - 1);
   }
 }
 void ParticleContainer::compute_forces() {
@@ -128,14 +148,22 @@ void ParticleContainer::compute_forces() {
                             (n->pressure / glm::pow(n->density, 2)));
       p.force += smoothing_kernel_gradient(p.position - n->position) * coef;
     }
-
     // f_viscosity
     for (auto n : p.neighbors) {
       p.force += viscosity * mass * ((p.velocity - n->velocity) / n->density) *
                  smoothing_kernel_gradient_squared(p.position - n->position);
     }
-
     // f_surface
+    for (auto n : p.neighbors) {
+      float k = 2 * rest_density / (p.density + n->density);
+      glm::vec3 cohesion = -surface_tension_coef * mass * mass *
+                           C(glm::length(p.position - n->position)) *
+                           glm::normalize(p.position - n->position);
+      glm::vec3 curvature =
+          -surface_tension_coef * mass * (p.normal - n->normal);
+      p.force += k * (cohesion + curvature);
+    }
+    // FIXME add surface tension
   }
 }
 void ParticleContainer::compute_velocity() {
@@ -149,12 +177,9 @@ void ParticleContainer::compute_position() {
   }
 }
 void ParticleContainer::resolve_collision() {
-  // set bounds
-
+  float width = 1;
+  float depth = 1;
   for (uint i = 0; i < particles.size(); i++) {
-    float width = 2;
-    float depth = 1;
-
     Particle &p = particles[i];
 
     if (p.position.y < -depth) {
@@ -188,7 +213,6 @@ void ParticleContainer::step_physics(int n) {
   for (int i = 0; i < n; i++) {
     find_neighboors();
     compute_density();
-    //   void compute_normals();
     compute_pressure();
     compute_forces();
     compute_velocity();
