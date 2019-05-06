@@ -1,4 +1,5 @@
 #include "ParticleContainer.h"
+#include <glm/gtx/string_cast.hpp>
 #include <iostream>
 #include <math.h>
 
@@ -94,6 +95,11 @@ glm::vec3 ParticleContainer::smoothing_kernel_gradient(glm::vec3 r) {
   return r * coef;
 }
 
+float ParticleContainer::smoothing_kernel_gradient_squared(glm::vec3 r) {
+  return (45 / (3.141592 * glm::pow(smoothing_radius, 6))) *
+         (smoothing_radius - glm::length(r));
+}
+
 void ParticleContainer::compute_density() {
   for (uint i = 0; i < particles.size(); i++) {
     Particle &p = particles[i];
@@ -108,20 +114,28 @@ void ParticleContainer::compute_density() {
 void ParticleContainer::compute_pressure() {
   for (uint i = 0; i < particles.size(); i++) {
     Particle &p = particles[i];
-    p.pressure =
-        gas_constant * (glm::pow(p.density / rest_density, stiffness) - 1);
+    p.pressure = gas_constant * (p.density - rest_density);
+    // gas_constant * (glm::pow(p.density / rest_density, stiffness) - 1);
   }
 }
 void ParticleContainer::compute_forces() {
   for (uint i = 0; i < particles.size(); i++) {
     Particle &p = particles[i];
-    p.force = glm::vec3(0);
+    p.force = glm::vec3(0, -9.8, 0);
     // f_pressure
     for (auto n : p.neighbors) {
       float coef = -mass * ((p.pressure / glm::pow(p.density, 2)) +
                             (n->pressure / glm::pow(n->density, 2)));
       p.force += smoothing_kernel_gradient(p.position - n->position) * coef;
     }
+
+    // f_viscosity
+    for (auto n : p.neighbors) {
+      p.force += viscosity * mass * ((p.velocity - n->velocity) / n->density) *
+                 smoothing_kernel_gradient_squared(p.position - n->position);
+    }
+
+    // f_surface
   }
 }
 void ParticleContainer::compute_velocity() {
@@ -134,7 +148,41 @@ void ParticleContainer::compute_position() {
     particles[i].position += timestep * particles[i].velocity;
   }
 }
-//   void resolve_collision();
+void ParticleContainer::resolve_collision() {
+  // set bounds
+
+  for (uint i = 0; i < particles.size(); i++) {
+    float width = 2;
+    float depth = 1;
+
+    Particle &p = particles[i];
+
+    if (p.position.y < -depth) {
+      p.position.y = -depth;
+      p.velocity.y = -p.velocity.y * damping;
+    }
+    if (p.position.y > depth) {
+      p.position.y = depth;
+      p.velocity.y = -p.velocity.y * damping;
+    }
+    if (p.position.x > width) {
+      p.position.x = width;
+      p.velocity.x = -p.velocity.x * damping;
+    }
+    if (p.position.x < -width) {
+      p.position.x = -width;
+      p.velocity.x = -p.velocity.x * damping;
+    }
+    if (p.position.z > width) {
+      p.position.z = width;
+      p.velocity.z = -p.velocity.z * damping;
+    }
+    if (p.position.z < -width) {
+      p.position.z = -width;
+      p.velocity.z = -p.velocity.z * damping;
+    }
+  }
+}
 
 void ParticleContainer::step_physics(int n) {
   for (int i = 0; i < n; i++) {
@@ -145,6 +193,6 @@ void ParticleContainer::step_physics(int n) {
     compute_forces();
     compute_velocity();
     compute_position();
-    //   void resolve_collision();
+    resolve_collision();
   }
 }
