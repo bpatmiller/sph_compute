@@ -46,6 +46,8 @@ public:
   // camera properties
   glm::vec3 eye = glm::vec3(0.0, 0.5, 1.0);
   glm::quat orientation = glm::quat(glm::mat4(1.0f));
+  glm::mat4 rotation;
+  glm::mat4 inverse_rotation;
   glm::vec3 fdir = FORWARD;
   glm::vec3 sdir = SIDE;
   glm::vec3 updir = UP;

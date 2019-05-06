@@ -12,7 +12,6 @@ struct ParticleContainer {
   VertexArr VAO;
   glm::mat4 model_matrix;
   std::vector<glm::vec3> vertices;
-  std::vector<glm::uvec3> face_indices;
   std::vector<glm::vec4> positions;
 
   std::vector<Particle> particles;
@@ -42,8 +41,8 @@ struct ParticleContainer {
     // number of grid subdivisions
     grid_n = glm::pow((max.x - min.x) / (radius * 2), 3);
 
-    // load sphere mesh
-    create_sphere(radius / 2);
+    // load mesh
+    create_sprite(radius / 2);
     // generate initial positions
     for (float x = min.x; x <= max.x; x += radius * 2) {
       for (float y = min.y; y <= max.y; y += radius * 2) {
@@ -65,6 +64,7 @@ struct ParticleContainer {
   void draw();
   void update_instances();
   void create_sphere(float Radius);
+  void create_sprite(float Radius);
 
   // fluid sim helper stems
   int get_cell_hash(glm::vec3);

@@ -20,9 +20,11 @@ void Gui::updateMatrices() {
   window_dimensions.x = window_width;
   window_dimensions.y = window_height;
 
+  rotation = glm::mat4_cast(orientation);
+  inverse_rotation = glm::inverse(rotation);
   glm::mat4 translate = glm::mat4(1.0f);
   translate = glm::translate(translate, -eye);
-  view_matrix = glm::mat4_cast(orientation) * translate;
+  view_matrix = rotation * translate;
   projection_matrix = glm::perspective(
       glm::radians(80.0f), ((float)window_width) / window_height, 0.01f, 20.f);
 }

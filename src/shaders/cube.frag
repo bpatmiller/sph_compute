@@ -10,21 +10,14 @@ in float scale;
 in float density;
 
 void main() {
-  vec3 col1 = vec3(0.8);
-  vec3 col2 = vec3(1.0, 0, 0);
-
-  vec3 lv = light_direction + view_direction;
-  vec3 h = lv / length(lv);
-  float bp_shade = dot(normal, h);
-
-  vec3 am = vec3(1, 1, 1);
-  vec3 color = 0.1 * am + bp_shade * mix(col1, col2, density / 100);
-  fragment_color = vec4(color, 1);
-
   // float wireframe_min =
   //     scale * min(triangle_coords.x, min(triangle_coords.y,
   //     triangle_coords.z));
 
-  // if (wireframe_min < 0.001)
-  //   fragment_color = vec4(1, 1, 1, 1);
+  // if (wireframe_min < 0.001) {
+  //   fragment_color = mix(vec4(1, 1, 1, 1), vec4(0,0,0,1), density/50);
+
+  // } else {
+  fragment_color = mix(vec4(0.2, 0.4, 0.65, 1), vec4(0,0,0,1), density/25);
+  // }
 }

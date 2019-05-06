@@ -3,34 +3,18 @@
 #include <iostream>
 #include <math.h>
 
-void ParticleContainer::create_sphere(float Radius) {
-  int Stacks = 8;
-  int Slices = 8;
-
-  for (int i = 0; i <= Stacks; ++i) {
-    float V = i / (float)Stacks;
-    float phi = V * glm::pi<float>();
-    for (int j = 0; j <= Slices; ++j) {
-      float U = j / (float)Slices;
-      float theta = U * (glm::pi<float>() * 2);
-      float x = cosf(theta) * sinf(phi);
-      float y = cosf(phi);
-      float z = sinf(theta) * sinf(phi);
-      vertices.push_back(glm::vec3(x, y, z) * Radius);
-    }
-  }
-
-  for (int i = 0; i < Slices * Stacks + Slices; ++i) {
-    face_indices.emplace_back(glm::uvec3(i, i + Slices + 1, i + Slices));
-    face_indices.emplace_back(glm::uvec3(i + Slices + 1, i, i + 1));
-  }
+void ParticleContainer::create_sprite(float Radius) {
+  vertices = {
+      {-Radius, Radius, 0.0f},
+      {-Radius, -Radius, 0.0f},
+      {Radius, Radius, 0.0f},
+      {Radius, -Radius, 0.0f},
+  };
 }
 
 void ParticleContainer::draw() {
   VAO.bind();
-  glDrawElementsInstanced(GL_TRIANGLES, face_indices.size() * 3,
-                          GL_UNSIGNED_INT, face_indices.data(),
-                          positions.size());
+  glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, positions.size());
 }
 
 void ParticleContainer::update_instances() {
@@ -49,7 +33,7 @@ int ParticleContainer::get_cell_hash(glm::vec3 p) {
 }
 
 void ParticleContainer::find_neighboors() {
-  //   build unordered multimap
+  // build unordered multimap
   block_hashmap.clear();
   for (uint i = 0; i < particles.size(); i++) {
     Particle &p = particles[i];
@@ -72,6 +56,8 @@ void ParticleContainer::find_neighboors() {
             float dist = glm::distance(p.position, it->second->position);
             if (0 < dist && dist < smoothing_radius) {
               p.neighbors.emplace_back(it->second);
+              p.density += mass * smoothing_kernel(glm::distance(
+                                      p.position, it->second->position));
             }
           }
         }
@@ -160,7 +146,7 @@ void ParticleContainer::compute_forces() {
       p.force += k * (cohesion + curvature);
     }
     // manually tune params
-    p.force /= 50;
+    p.force /= 10;
     // clamp for reasonable measure and add gravity
     p.force = glm::clamp(p.force, -100.0f, 100.0f);
     p.force += glm::vec3(0, -9.8, 0);
@@ -206,7 +192,7 @@ void ParticleContainer::compute_position() {
 void ParticleContainer::step_physics(int n) {
   for (int i = 0; i < n; i++) {
     find_neighboors();
-    compute_density();
+    // compute_density();
     compute_pressure();
     compute_forces();
 
