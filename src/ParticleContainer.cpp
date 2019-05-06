@@ -4,8 +4,8 @@
 #include <math.h>
 
 void ParticleContainer::create_sphere(float Radius) {
-  int Stacks = 10;
-  int Slices = 10;
+  int Stacks = 8;
+  int Slices = 8;
 
   for (int i = 0; i <= Stacks; ++i) {
     float V = i / (float)Stacks;
@@ -36,7 +36,7 @@ void ParticleContainer::draw() {
 void ParticleContainer::update_instances() {
   positions.clear();
   for (auto p : particles) {
-    positions.emplace_back(glm::vec4(p.position, p.density));
+    positions.emplace_back(glm::vec4(p.position, glm::length(p.force)));
   }
   VAO.ib.bindVertices(positions);
 }
@@ -141,7 +141,7 @@ void ParticleContainer::compute_pressure() {
 void ParticleContainer::compute_forces() {
   for (uint i = 0; i < particles.size(); i++) {
     Particle &p = particles[i];
-    p.force = glm::vec3(0, -9.8, 0);
+    p.force = glm::vec3(0);
     // f_pressure
     for (auto n : p.neighbors) {
       float coef = -mass * ((p.pressure / glm::pow(p.density, 2)) +
@@ -163,7 +163,10 @@ void ParticleContainer::compute_forces() {
           -surface_tension_coef * mass * (p.normal - n->normal);
       p.force += k * (cohesion + curvature);
     }
-    // FIXME add surface tension
+
+    p.force /= 50;
+    p.force = glm::clamp(p.force, -100.0f, 100.0f);
+    p.force += glm::vec3(0, -9.8, 0);
   }
 }
 void ParticleContainer::compute_velocity() {

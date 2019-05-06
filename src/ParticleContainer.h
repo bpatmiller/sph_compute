@@ -22,7 +22,7 @@ struct ParticleContainer {
   float grid_cell_size;
   float smoothing_radius;
   int grid_n = 0;
-  float timestep = 0.001;
+  float timestep = 0.05;
 
   float mass = 28.0;
   float rest_density = 59.0;

@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
                       "src/shaders/cube.frag");
 
   // create vector of particles
-  glm::vec3 min(0);
+  glm::vec3 min(-1);
   glm::vec3 max(1);
   float radius = 0.05;
   ParticleContainer container(min, max, radius);
@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     fluid_shader.setVec3("light_position", g.light_position);
     fluid_shader.setVec3("camera_position", g.eye);
 
-    container.step_physics(5);
+    container.step_physics(1);
     container.update_instances();
     container.draw();
 
