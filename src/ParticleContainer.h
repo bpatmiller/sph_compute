@@ -22,7 +22,10 @@ struct ParticleContainer {
   float grid_cell_size;
   float smoothing_radius;
   int grid_n = 0;
-  float timestep = 0.05;
+  float timestep = 0.01;
+
+  float container_width = 1;
+  float container_depth = 1;
 
   float mass = 28.0;
   float rest_density = 59.0;
@@ -40,7 +43,7 @@ struct ParticleContainer {
     grid_n = glm::pow((max.x - min.x) / (radius * 2), 3);
 
     // load sphere mesh
-    create_sphere(radius);
+    create_sphere(radius / 2);
     // generate initial positions
     for (float x = min.x; x <= max.x; x += radius * 2) {
       for (float y = min.y; y <= max.y; y += radius * 2) {
@@ -76,7 +79,6 @@ struct ParticleContainer {
   void compute_normals();
   void compute_pressure();
   void compute_forces();
-  void compute_velocity();
   void compute_position();
   void resolve_collision();
 };

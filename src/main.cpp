@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
   // create vector of particles
   glm::vec3 min(-1);
   glm::vec3 max(1);
-  float radius = 0.05;
+  float radius = 0.1;
   ParticleContainer container(min, max, radius);
 
   // draw loop
