@@ -45,8 +45,8 @@ public:
   glm::vec3 light_position = glm::vec3(-1.0f, 4.0f, 0.7f);
 
   // camera properties
-  glm::vec3 focus = glm::vec3(0);
-  glm::vec3 eye = glm::vec3(0, 0, 2);
+  glm::vec3 focus = glm::vec3(0, -0.5, 0);
+  glm::vec3 eye = glm::vec3(0, -0.5, 2);
   glm::quat orientation = glm::quat(glm::mat4(1));
   glm::mat4 rotation;
   glm::mat4 inverse_rotation;

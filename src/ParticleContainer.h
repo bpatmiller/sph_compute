@@ -30,7 +30,7 @@ struct ParticleContainer {
   float MASS = 28.0;
   float REST_DENSITY = 59.0;
   float GAS_CONST = 0.0000001;
-  float VISC = 0.3;
+  float VISC = 0.8;
   float SURF = 8.0;
   // container/tuning parameters
   glm::vec3 container_min;
@@ -79,7 +79,6 @@ struct ParticleContainer {
     for (float x = min.x; x <= max.x; x += h / dens) {
       for (float y = min.y; y <= max.y; y += h / dens) {
         for (float z = min.z; z <= max.z; z += h / dens) {
-          // FIXME add jitter
           float jitter =
               0.01f * static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
           Particle p = Particle(glm::vec3(x, y, z + jitter));

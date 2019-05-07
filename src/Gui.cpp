@@ -2,7 +2,7 @@
 
 void Gui::clearRender() {
   glfwGetFramebufferSize(window, &window_width, &window_height);
-  glClearColor(0.9f, 0.9f, 0.9f, 0.0f);
+  glClearColor(0.8f, 0.8f, 0.8f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);

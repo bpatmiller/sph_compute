@@ -40,7 +40,7 @@ void ParticleContainer::draw() {
 void ParticleContainer::update_instances() {
   positions.clear();
   for (auto p : particles) {
-    positions.emplace_back(glm::vec4(p.position, glm::length(p.velocity)));
+    positions.emplace_back(glm::vec4(p.position, 1.0 - (p.pressure * 100.0)));
   }
   VAO.ib.bindVertices(positions);
 }
@@ -196,27 +196,19 @@ void ParticleContainer::integrate() {
     p.acceleration_old = p.acceleration;
     p.acceleration = (p.force / MASS);
     // get new velocity
+    // FIXME get averaged velocities
     p.velocity += timestep * ((p.acceleration + p.acceleration_old) * 0.5f);
     // get new position
     p.position +=
         (timestep * p.velocity) + (p.acceleration * timestep * timestep * 0.5f);
     // handle collisions
-    // if (p.position.y < container_min.y && glm::pow(p.position.x, 2.0f) +
-    // glm::pow(p.position.z, 2.0f) < 0.1) {
-    //   p.position.y = container_min.y;
-    //   p.velocity *= damping;
-    //   p.velocity += glm::vec3(0,5.0,0);
-    // }
-
     for (uint j = 0; j < 3; j++) {
-      if (p.position[j] < container_min[j] - particle_radius) {
+      if (p.position[j] < container_min[j] - 0.001) {
         p.position[j] = container_min[j];
-        p.velocity *= damping;
-      } else if (p.position[j] > container_max[j] + particle_radius) {
-        float jitter =
-            static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-        p.position[j] = container_max[j] + jitter * 0.1f;
-        p.velocity *= damping;
+        p.velocity[j] *= damping;
+      } else if (p.position[j] > container_max[j] + 0.001) {
+        p.position[j] = container_max[j];
+        p.velocity[j] *= damping;
       }
     }
     if (glm::isnan(p.position.x) || glm::isnan(p.position.y) ||
