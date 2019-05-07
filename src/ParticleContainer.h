@@ -21,7 +21,7 @@ struct ParticleContainer {
   std::unordered_multimap<int, Particle *> block_hashmap;
   // simulation parameters
   float timestep = 1.0f / 240.0f;
-  float particle_radius = 0.05;
+  float particle_radius = 0.1;
   float h = particle_radius * 4;
   // fluid coefficients
   float mass = 28.0;                // m
@@ -52,16 +52,8 @@ struct ParticleContainer {
     // load mesh
     create_sprite(particle_radius);
 
-    // generate initial positions
-    for (float x = min.x; x <= max.x; x += particle_radius * 2) {
-      for (float y = min.y; y <= max.y; y += particle_radius * 2) {
-        for (float z = min.z; z <= max.z; z += particle_radius * 2) {
-          Particle p = Particle(glm::vec3(x, y, z));
-          particles.emplace_back(p);
-          positions.emplace_back(glm::vec4(p.position, p.density));
-        }
-      }
-    }
+    // init scene
+    init_sph(min, max);
 
     // bind vao
     VAO.vb.bindVertices(vertices);
@@ -76,6 +68,19 @@ struct ParticleContainer {
   void create_sphere(float Radius);
   void create_sprite(float Radius);
 
+  void init_sph(glm::vec3 min, glm::vec3 max) {
+        // generate initial positions
+    for (float x = min.x; x <= max.x; x += h / 2.0) {
+      for (float y = min.y; y <= max.y; y += h / 2.0) {
+        for (float z = min.z; z <= max.z; z += h / 2.0) {
+          Particle p = Particle(glm::vec3(x, y, z));
+          particles.emplace_back(p);
+          positions.emplace_back(glm::vec4(p.position, p.density));
+        }
+      }
+    }
+  };
+
   // fluid sim helper stems
   int hash(glm::vec3);
   float poly6(float r);
@@ -84,11 +89,12 @@ struct ParticleContainer {
   float laplacian_visc(glm::vec3 r);
   float C(float r);
   // fluid simulation steps
-  void step_physics(int n);
-  void find_neighbors();
-  void compute_pressure();
+  void compute_density_pressure();
   void compute_forces();
-  void compute_position();
+  void integrate();
+  //
+  void step_physics(int n);
+
 };
 
 #endif

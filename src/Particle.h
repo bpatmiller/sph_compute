@@ -13,13 +13,11 @@ struct Particle {
   glm::vec3 normal;
   float density;
   float pressure;
-  std::vector<Particle *> neighbors;
 
   Particle(glm::vec3 p) {
     position = p;
     pressure = 0;
     density = 0;
-    neighbors.clear();
     acceleration_old = glm::vec3(0);
   }
 };

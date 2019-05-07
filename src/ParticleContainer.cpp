@@ -136,23 +136,25 @@ void ParticleContainer::compute_forces() {
     p.force = glm::vec3(0, -9.8, 0);
     // f_pressure
     for (auto n : p.neighbors) {
-      float coef = -mass * (p.pressure + n->pressure) / (2 * n->density);
+      float coef = -mass * mass *
+                   (p.pressure / glm::pow(p.density, 2) +
+                    n->pressure / glm::pow(n->density, 2));
       p.force += poly6_grad(p.position - n->position) * coef;
     }
     // f_viscosity
     for (auto n : p.neighbors) {
-      p.force += viscosity * mass * ((p.velocity - n->velocity) / n->density) *
+      p.force += viscosity * mass * ((n->velocity - p.velocity) / n->density) *
                  laplacian_visc(p.position - n->position);
     }
     // f_surface
-    for (auto n : p.neighbors) {
-      float k = 2 * rest_density / (p.density + n->density);
-      glm::vec3 cohesion = -surface_tension_coef * mass * mass *
-                           C(glm::length(p.position - n->position)) *
-                           glm::normalize(p.position - n->position);
-      glm::vec3 curvature =
-          -surface_tension_coef * mass * (p.normal - n->normal);
-      p.force += k * (cohesion + curvature);
+    // for (auto n : p.neighbors) {
+    //   float k = 2 * rest_density / (p.density + n->density);
+    //   glm::vec3 cohesion = -surface_tension_coef * mass * mass *
+    //                        C(glm::length(p.position - n->position)) *
+    //                        glm::normalize(p.position - n->position);
+    //   glm::vec3 curvature =
+    //       -surface_tension_coef * mass * (p.normal - n->normal);
+    //   p.force += k * (cohesion + curvature);
     }
     // clamp for reasonable measure and add gravity
   }
