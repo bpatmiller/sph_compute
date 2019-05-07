@@ -10,5 +10,6 @@ uniform vec3 light_position;
 in float density;
 
 void main() {
-  fragment_color = mix(vec4(0,0,0,1), vec4(0.2, 0.4, 0.65, 1), density + 0.1);
+  fragment_color =
+      mix(vec4(0, 0, 0, 1), vec4(0.2, 0.4, 0.65, 1), density + 0.1);
 }

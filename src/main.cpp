@@ -26,20 +26,23 @@ int main(int argc, char *argv[]) {
   // particle shader/object
   Shader fluid_shader("src/shaders/cube.vert", "src/shaders/cube.geom",
                       "src/shaders/cube.frag");
-  glm::vec3 min(-.25);
-  glm::vec3 max(.25);
-  float radius = 0.025;
-  ParticleContainer container(min, max, radius);
+  glm::vec3 min(-1, -1, -1);
+  glm::vec3 max(1, 0, 1);
+  ParticleContainer container(min, max);
 
   // pool shader/object
   Shader pool_shader("src/shaders/pool.vert", "", "src/shaders/pool.frag");
   std::vector<glm::vec3> pool_vertices = {
       {-1.0f, -1.0f, -1.0f}, {-1.0f, -1.0f, 1.0f}, {1.0f, -1.0f, -1.0f},
-      {1.0f, -1.0f, 1.0f}, {-1.0f, 1.0f, -1.0f}, {-1.0f, 1.0f, 1.0f},
-      {1.0f, 1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}};
+      {1.0f, -1.0f, 1.0f},   {-1.0f, 1.0f, -1.0f}, {-1.0f, 1.0f, 1.0f},
+      {1.0f, 1.0f, -1.0f},   {1.0f, 1.0f, 1.0f}};
+  for (uint i = 0; i < pool_vertices.size(); i++) {
+    pool_vertices[i].x *= 5;
+    pool_vertices[i].z *= 5;
+  }
   std::vector<glm::uvec3> pool_indices = {
-      {0, 1, 2}, {1, 3, 2}, {4, 6, 5}, {5, 6, 7}, {0, 5, 1}, {0, 4, 5},
-      {2, 3, 7}, {2, 7, 6}, {3, 1, 5}, {3, 5, 7}, {0, 2, 6}, {0, 6, 4}};
+      {0, 1, 2}, {1, 3, 2}, {0, 5, 1}, {0, 4, 5}, {2, 3, 7},
+      {2, 7, 6}, {3, 1, 5}, {3, 5, 7}, {0, 2, 6}, {0, 6, 4}};
   Geometry pool_geometry(pool_vertices, pool_indices);
 
   // draw loop

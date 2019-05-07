@@ -1,8 +1,5 @@
 #include "Gui.h"
 
-#include "glm/gtx/rotate_vector.hpp"
-#include <glm/glm.hpp>
-
 void Gui::clearRender() {
   glfwGetFramebufferSize(window, &window_width, &window_height);
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);

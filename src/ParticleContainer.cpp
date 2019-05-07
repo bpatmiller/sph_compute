@@ -2,6 +2,7 @@
 #include <glm/gtx/string_cast.hpp>
 #include <iostream>
 #include <math.h>
+#include <omp.h>
 
 // ================================================
 // rendering functions
@@ -30,15 +31,17 @@ void ParticleContainer::update_instances() {
 // smoothing kernel functions
 // ================================================
 float ParticleContainer::poly6(float r) {
-  return poly6_coef *  glm::pow(glm::pow(h, 2) - glm::pow(r, 2), 3);
+  return poly6_coef * glm::pow(glm::pow(h, 2) - glm::pow(r, 2), 3);
 }
 
 glm::vec3 ParticleContainer::poly6_grad(glm::vec3 r) {
-  return poly6_grad_coef * r * glm::pow((glm::pow(h,2) - glm::pow(glm::length(r), 2)),2);
+  return poly6_grad_coef * r *
+         glm::pow((glm::pow(h, 2.0f) - glm::pow(glm::length(r), 2.0f)), 2.0f);
 }
 
-glm::vec3 spiky_grad(glm::vec3 r) {
-  return spiky_grad_coef * glm::normalize(r) * glm::pow( h - glm::length(r) , 2)
+glm::vec3 ParticleContainer::spiky_grad(glm::vec3 r) {
+  return spiky_grad_coef * glm::normalize(r) *
+         glm::pow(h - glm::length(r), 2.0f);
 }
 
 float ParticleContainer::laplacian_visc(glm::vec3 r) {
@@ -79,7 +82,8 @@ void ParticleContainer::find_neighbors() {
     block_hashmap.insert({hash(p.position), &p});
   }
 
-  // iterate through multimap and create neighbors
+// iterate through multimap and create neighbors
+#pragma omp parallel for
   for (uint i = 0; i < particles.size(); i++) {
     Particle &p = particles[i];
     p.neighbors.clear();
@@ -87,7 +91,7 @@ void ParticleContainer::find_neighbors() {
     for (int i = -1; i <= 1; i++) {
       for (int j = -1; j <= 1; j++) {
         for (int k = -1; k <= 1; k++) {
-          glm::vec3 cur_pos = p.position + glm::vec3(h * i, h* j,h* k);
+          glm::vec3 cur_pos = p.position + glm::vec3(h * i, h * j, h * k);
           int block_hash = hash(cur_pos);
           // iterate through candidates
           auto iter = block_hashmap.equal_range(block_hash);
@@ -96,8 +100,8 @@ void ParticleContainer::find_neighbors() {
             if (0 < dist && dist < h) {
               p.neighbors.emplace_back(it->second);
               // compute density while doing this
-              p.density += mass * poly6(glm::distance(
-                                      p.position, it->second->position));
+              p.density +=
+                  mass * poly6(glm::distance(p.position, it->second->position));
             }
           }
         }
@@ -108,6 +112,7 @@ void ParticleContainer::find_neighbors() {
 
 // 2) compute pressure and normals for each particle
 void ParticleContainer::compute_pressure() {
+#pragma omp parallel for
   for (uint i = 0; i < particles.size(); i++) {
     Particle &p = particles[i];
     // compute pressure
@@ -115,8 +120,7 @@ void ParticleContainer::compute_pressure() {
     // compute normals
     p.normal = glm::vec3(0);
     for (auto n : p.neighbors) {
-      p.normal += (mass / n->density) *
-                  poly6_grad(p.position - n->position);
+      p.normal += (mass / n->density) * poly6_grad(p.position - n->position);
     }
     p.normal *= h;
   }
@@ -125,13 +129,14 @@ void ParticleContainer::compute_pressure() {
 // 3) compute the forces acting on each particle
 // gravity, pressure, viscosity, surface tension
 void ParticleContainer::compute_forces() {
+#pragma omp parallel for
   for (uint i = 0; i < particles.size(); i++) {
     Particle &p = particles[i];
     // f_gravity
     p.force = glm::vec3(0, -9.8, 0);
     // f_pressure
     for (auto n : p.neighbors) {
-      float coef = - mass * (p.pressure + n->pressure) / (2 * n->density);
+      float coef = -mass * (p.pressure + n->pressure) / (2 * n->density);
       p.force += poly6_grad(p.position - n->position) * coef;
     }
     // f_viscosity
@@ -153,6 +158,7 @@ void ParticleContainer::compute_forces() {
   }
 }
 void ParticleContainer::compute_position() {
+#pragma omp parallel for
   for (uint i = 0; i < particles.size(); i++) {
     Particle &p = particles[i];
     // get new velocity
