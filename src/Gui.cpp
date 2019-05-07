@@ -2,7 +2,7 @@
 
 void Gui::clearRender() {
   glfwGetFramebufferSize(window, &window_width, &window_height);
-  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  glClearColor(0.9f, 0.9f, 0.9f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
@@ -72,7 +72,7 @@ void Gui::keyCallback(int key, int scancode, int action, int mods) {
 }
 
 void Gui::applyKeyboardInput() {
-  float move_speed = 0.01f;
+  float move_speed = 0.05f;
   if (keyHeld[GLFW_KEY_W]) {
     eye += fdir * move_speed;
   }

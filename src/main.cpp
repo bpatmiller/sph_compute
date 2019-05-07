@@ -26,10 +26,10 @@ int main(int argc, char *argv[]) {
   // particle shader/object
   Shader fluid_shader("src/shaders/cube.vert", "src/shaders/cube.geom",
                       "src/shaders/cube.frag");
-  glm::vec3 min(-1, 0, -1);
-  glm::vec3 max(1, 1, 1);
+  glm::vec3 min(-0.5, -0.5, -1);
+  glm::vec3 max(0.5, 0.5, 1);
   glm::vec3 container_min(-1, -1, -1);
-  glm::vec3 container_max(3, 1, 1);
+  glm::vec3 container_max(3, 2, 1);
   ParticleContainer container(min, max, container_min, container_max);
 
   // pool shader/object
@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
       {1.0f, 1.0f, -1.0f},   {1.0f, 1.0f, 1.0f}};
   // fit the pool to container size
   for (uint i = 0; i < pool_vertices.size(); i++) {
-    for (int k = 0; k < 2; k++) {
+    for (int k = 0; k < 3; k++) {
       if (pool_vertices[i][k] == -1.0f) {
         pool_vertices[i][k] = container_min[k];
       } else {

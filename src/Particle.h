@@ -11,8 +11,10 @@ struct Particle {
   glm::vec3 acceleration_old;
   glm::vec3 force;
   glm::vec3 normal;
+  std::vector<Particle *> neighbors;
   float density;
   float pressure;
+  float color;
 
   Particle(glm::vec3 p) {
     position = p;
