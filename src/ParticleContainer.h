@@ -35,12 +35,12 @@ struct ParticleContainer {
   // container/tuning parameters
   glm::vec3 container_min;
   glm::vec3 container_max;
-  float damping = -0.25;
+  float damping = -0.75;
   // math coefficients
   const float PI = 3.14159265358979323846264338327950288;
   const float POLY6_COEF = 315.0f / (64 * PI * glm::pow(h, 9));
   const float POLY6_GRAD_COEF = -945.0f / (32 * PI * glm::pow(h, 9));
-  const float SPIKY_COEF = 15.0f / (PI * glm::pow(h,6.0f));
+  const float SPIKY_COEF = 15.0f / (PI * glm::pow(h, 6.0f));
   const float spiky_grad_coef = 45.0f / (PI * glm::pow(h, 6));
   const float laplacian_visc_coef = 45.0f / (PI * glm::pow(h, 6));
   const float C_coef = (32.0f / (PI * glm::pow(h, 9)));
@@ -80,7 +80,8 @@ struct ParticleContainer {
       for (float y = min.y; y <= max.y; y += h / dens) {
         for (float z = min.z; z <= max.z; z += h / dens) {
           // FIXME add jitter
-          float jitter = 0.01f * static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+          float jitter =
+              0.01f * static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
           Particle p = Particle(glm::vec3(x, y, z + jitter));
           p.color = (x - min.x) / (max.x - min.x);
           particles.emplace_back(p);

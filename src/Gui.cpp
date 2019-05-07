@@ -21,7 +21,7 @@ void Gui::updateMatrices() {
   inverse_rotation = glm::inverse(rotation);
   glm::mat4 translate = glm::mat4(1.0f);
   translate = glm::translate(translate, -eye);
-  view_matrix = rotation * translate;
+  view_matrix = translate * rotation;
   projection_matrix = glm::perspective(
       glm::radians(80.0f), ((float)window_width) / window_height, 0.01f, 20.f);
 }
@@ -52,11 +52,7 @@ void Gui::mousePosCallback(double mouse_x, double mouse_y) {
   glm::quat qpitch = glm::angleAxis(glm::radians(dx), UP);
   orientation = qyaw * orientation * qpitch;
 
-  glm::mat4 inv = glm::inverse(glm::mat4_cast(orientation));
-
-  fdir = glm::vec3(inv * glm::vec4(FORWARD, 1));
-  sdir = glm::vec3(inv * glm::vec4(SIDE, 1));
-  updir = glm::cross(fdir, sdir);
+  // glm::mat4 inv = glm::inverse(glm::mat4_cast(orientation));
 }
 
 void Gui::keyCallback(int key, int scancode, int action, int mods) {
@@ -74,16 +70,10 @@ void Gui::keyCallback(int key, int scancode, int action, int mods) {
 void Gui::applyKeyboardInput() {
   float move_speed = 0.05f;
   if (keyHeld[GLFW_KEY_W]) {
-    eye += fdir * move_speed;
+    eye -= move_speed * (eye - focus);
   }
   if (keyHeld[GLFW_KEY_S]) {
-    eye -= fdir * move_speed;
-  }
-  if (keyHeld[GLFW_KEY_A]) {
-    eye -= sdir * move_speed;
-  }
-  if (keyHeld[GLFW_KEY_D]) {
-    eye += sdir * move_speed;
+    eye += move_speed * (eye - focus);
   }
 }
 

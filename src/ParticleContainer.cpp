@@ -57,7 +57,6 @@ glm::vec3 ParticleContainer::poly6_grad(glm::vec3 r) {
          glm::pow((glm::pow(h, 2.0f) - glm::pow(glm::length(r), 2.0f)), 2.0f);
 }
 
-
 float ParticleContainer::spiky(float r) {
   return SPIKY_COEF * glm::pow(h - r, 3.0f);
 }
@@ -164,12 +163,13 @@ void ParticleContainer::compute_forces() {
   for (uint i = 0; i < particles.size(); i++) {
     Particle &p = particles[i];
     // f_gravity
-    p.force = MASS* glm::vec3(0, -9.8, 0);
+    p.force = MASS * glm::vec3(0, -9.8, 0);
     // f_pressure
     for (auto n : p.neighbors) {
       if (&p == n)
         continue;
-      float coef = p.density * MASS * (p.pressure + n->pressure) / (2.0f * n->density);
+      float coef =
+          p.density * MASS * (p.pressure + n->pressure) / (2.0f * n->density);
       p.force += spiky_grad(p.position - n->position) * coef;
 
       // f_viscosity
@@ -201,12 +201,13 @@ void ParticleContainer::integrate() {
     p.position +=
         (timestep * p.velocity) + (p.acceleration * timestep * timestep * 0.5f);
     // handle collisions
-    if (p.position.y < container_min.y && glm::pow(p.position.x, 2.0f) + glm::pow(p.position.z, 2.0f) < 0.1) {
-      p.position.y = container_min.y;
-      p.velocity *= damping;
-      p.velocity += glm::vec3(0,5.0,0);
-    }
-    
+    // if (p.position.y < container_min.y && glm::pow(p.position.x, 2.0f) +
+    // glm::pow(p.position.z, 2.0f) < 0.1) {
+    //   p.position.y = container_min.y;
+    //   p.velocity *= damping;
+    //   p.velocity += glm::vec3(0,5.0,0);
+    // }
+
     for (uint j = 0; j < 3; j++) {
       if (p.position[j] < container_min[j] - particle_radius) {
         p.position[j] = container_min[j];

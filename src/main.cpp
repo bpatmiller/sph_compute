@@ -26,14 +26,15 @@ int main(int argc, char *argv[]) {
   // particle shader/object
   Shader fluid_shader("src/shaders/cube.vert", "src/shaders/cube.geom",
                       "src/shaders/cube.frag");
-  glm::vec3 min(-0.5, -0.5, -1);
-  glm::vec3 max(0.5, 1.0, 1);
-  glm::vec3 container_min(-1, -1, -1);
-  glm::vec3 container_max(1, 1.0, 1);
+  glm::vec3 min(-1.0, 0.0, -0.5);
+  glm::vec3 max(0.0, 1.0, 0.5);
+  glm::vec3 container_min(-1.0, -1.0, -0.5);
+  glm::vec3 container_max(1.0, 1.0, 0.5);
   ParticleContainer container(min, max, container_min, container_max);
 
   // pool shader/object
-  Shader pool_shader("src/shaders/pool.vert", "", "src/shaders/pool.frag");
+  Shader pool_shader("src/shaders/pool.vert", "src/shaders/pool.geom",
+                     "src/shaders/pool.frag");
   std::vector<glm::vec3> pool_vertices = {
       {-1.0f, -1.0f, -1.0f}, {-1.0f, -1.0f, 1.0f}, {1.0f, -1.0f, -1.0f},
       {1.0f, -1.0f, 1.0f},   {-1.0f, 1.0f, -1.0f}, {-1.0f, 1.0f, 1.0f},
@@ -61,6 +62,7 @@ int main(int argc, char *argv[]) {
     g.clearRender();
 
     // pool pass
+
     pool_shader.use();
     pool_shader.setMat("projection", g.projection_matrix);
     pool_shader.setMat("view", g.view_matrix);
@@ -79,7 +81,7 @@ int main(int argc, char *argv[]) {
     fluid_shader.setVec3("camera_position", g.eye);
     fluid_shader.setMat("inverse_rotation", g.inverse_rotation);
 
-    container.step_physics(5);
+    container.step_physics(25);
     container.update_instances();
     container.draw();
 
