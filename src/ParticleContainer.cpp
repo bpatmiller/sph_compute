@@ -3,6 +3,9 @@
 #include <iostream>
 #include <math.h>
 
+// ================================================
+// rendering functions
+// ================================================
 void ParticleContainer::create_sprite(float Radius) {
   vertices = {
       {-Radius, Radius, 0.0f},
@@ -11,12 +14,10 @@ void ParticleContainer::create_sprite(float Radius) {
       {Radius, -Radius, 0.0f},
   };
 }
-
 void ParticleContainer::draw() {
   VAO.bind();
   glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, positions.size());
 }
-
 void ParticleContainer::update_instances() {
   positions.clear();
   for (auto p : particles) {
@@ -25,38 +26,77 @@ void ParticleContainer::update_instances() {
   VAO.ib.bindVertices(positions);
 }
 
-int ParticleContainer::get_cell_hash(glm::vec3 p) {
-  glm::ivec3 p_hat(floor(p.x / grid_cell_size), floor(p.y / grid_cell_size),
-                   floor(p.z / grid_cell_size));
-  return ((p_hat.x * 73856093) ^ (p_hat.y * 19349663) ^ (p_hat.z * 83492791)) %
-         grid_n;
+// ================================================
+// smoothing kernel functions
+// ================================================
+float ParticleContainer::poly6(float r) {
+  return poly6_coef *  glm::pow(glm::pow(h, 2) - glm::pow(r, 2), 3);
 }
 
-void ParticleContainer::find_neighboors() {
+glm::vec3 ParticleContainer::poly6_grad(glm::vec3 r) {
+  return poly6_grad_coef * r * glm::pow((glm::pow(h,2) - glm::pow(glm::length(r), 2)),2);
+}
+
+glm::vec3 spiky_grad(glm::vec3 r) {
+  return spiky_grad_coef * glm::normalize(r) * glm::pow( h - glm::length(r) , 2)
+}
+
+float ParticleContainer::laplacian_visc(glm::vec3 r) {
+  return laplacian_visc_coef * (h - glm::length(r));
+}
+
+float ParticleContainer::C(float r) {
+  if (2 * r > h && r <= h) {
+    return C_coef * glm::pow(h - r, 3) * glm::pow(r, 3);
+  } else if (r > 0 && 2 * r <= h) {
+    return (C_coef * 2 * glm::pow(h - r, 3) * glm::pow(r, 3)) -
+           (glm::pow(h, 6) / 64);
+  }
+  return 0;
+}
+
+// ================================================
+// spatial hashing
+// ================================================
+
+int ParticleContainer::hash(glm::vec3 p) {
+  glm::ivec3 p_hat(glm::floor(p / h));
+  return ((p_hat.x * 73856093) ^ (p_hat.y * 19349663) ^ (p_hat.z * 83492791));
+  // TODO potentially mod by grid size
+}
+
+// ================================================
+// simulation steps
+// ================================================
+
+// 1) find each particles neighbors
+//  and compute density at each particle
+void ParticleContainer::find_neighbors() {
   // build unordered multimap
   block_hashmap.clear();
   for (uint i = 0; i < particles.size(); i++) {
     Particle &p = particles[i];
-    block_hashmap.insert({get_cell_hash(p.position), &p});
+    block_hashmap.insert({hash(p.position), &p});
   }
 
+  // iterate through multimap and create neighbors
   for (uint i = 0; i < particles.size(); i++) {
     Particle &p = particles[i];
     p.neighbors.clear();
-
+    // for all 27 adjacent spatial blocks
     for (int i = -1; i <= 1; i++) {
       for (int j = -1; j <= 1; j++) {
         for (int k = -1; k <= 1; k++) {
-          glm::vec3 block_position =
-              p.position + glm::fvec3(i, j, k) * grid_cell_size;
-          int block_hash = get_cell_hash(block_position);
-          // get the neighbors that have the same hash
+          glm::vec3 cur_pos = p.position + glm::vec3(h * i, h* j,h* k);
+          int block_hash = hash(cur_pos);
+          // iterate through candidates
           auto iter = block_hashmap.equal_range(block_hash);
           for (auto it = iter.first; it != iter.second; it++) {
             float dist = glm::distance(p.position, it->second->position);
-            if (0 < dist && dist < smoothing_radius) {
+            if (0 < dist && dist < h) {
               p.neighbors.emplace_back(it->second);
-              p.density += mass * smoothing_kernel(glm::distance(
+              // compute density while doing this
+              p.density += mass * poly6(glm::distance(
                                       p.position, it->second->position));
             }
           }
@@ -66,46 +106,7 @@ void ParticleContainer::find_neighboors() {
   }
 }
 
-float ParticleContainer::smoothing_kernel(float dist) {
-  return (315 / (64 * 3.141592 * glm::pow(smoothing_radius, 9))) *
-         glm::pow(glm::pow(smoothing_radius, 2) - glm::pow(dist, 2), 3);
-}
-
-glm::vec3 ParticleContainer::smoothing_kernel_gradient(glm::vec3 r) {
-  float coef =
-      (945 / (32 * 3.141592 * glm::pow(smoothing_radius, 9))) *
-      glm::pow(glm::pow(smoothing_radius, 2) - glm::pow(glm::length(r), 2), 2);
-  return r * coef;
-}
-
-float ParticleContainer::smoothing_kernel_gradient_squared(glm::vec3 r) {
-  return (45 / (3.141592 * glm::pow(smoothing_radius, 6))) *
-         (smoothing_radius - glm::length(r));
-}
-
-void ParticleContainer::compute_density() {
-  for (uint i = 0; i < particles.size(); i++) {
-    Particle &p = particles[i];
-    p.density = 0;
-    for (auto neighbor : p.neighbors) {
-      p.density += mass * smoothing_kernel(
-                              glm::distance(p.position, neighbor->position));
-    }
-  }
-}
-
-float ParticleContainer::C(float r) {
-  if (2 * r > smoothing_radius && r <= smoothing_radius) {
-    float coef = (32 / (3.141592 * glm::pow(smoothing_radius, 9)));
-    return coef * glm::pow(smoothing_radius - r, 3) * glm::pow(r, 3);
-  } else if (r > 0 && 2 * r <= smoothing_radius) {
-    float coef = (32 / (3.141592 * glm::pow(smoothing_radius, 9)));
-    return coef * 2 * glm::pow(smoothing_radius - r, 3) * glm::pow(r, 3) -
-           glm::pow(smoothing_radius, 6) / 64;
-  }
-  return 0;
-}
-
+// 2) compute pressure and normals for each particle
 void ParticleContainer::compute_pressure() {
   for (uint i = 0; i < particles.size(); i++) {
     Particle &p = particles[i];
@@ -115,25 +116,28 @@ void ParticleContainer::compute_pressure() {
     p.normal = glm::vec3(0);
     for (auto n : p.neighbors) {
       p.normal += (mass / n->density) *
-                  smoothing_kernel_gradient(p.position - n->position);
+                  poly6_grad(p.position - n->position);
     }
-    p.normal *= smoothing_radius;
+    p.normal *= h;
   }
 }
+
+// 3) compute the forces acting on each particle
+// gravity, pressure, viscosity, surface tension
 void ParticleContainer::compute_forces() {
   for (uint i = 0; i < particles.size(); i++) {
     Particle &p = particles[i];
-    p.force = glm::vec3(0);
+    // f_gravity
+    p.force = glm::vec3(0, -9.8, 0);
     // f_pressure
     for (auto n : p.neighbors) {
-      float coef = -mass * ((p.pressure / glm::pow(p.density, 2)) +
-                            (n->pressure / glm::pow(n->density, 2)));
-      p.force += smoothing_kernel_gradient(p.position - n->position) * coef;
+      float coef = - mass * (p.pressure + n->pressure) / (2 * n->density);
+      p.force += poly6_grad(p.position - n->position) * coef;
     }
     // f_viscosity
     for (auto n : p.neighbors) {
       p.force += viscosity * mass * ((p.velocity - n->velocity) / n->density) *
-                 smoothing_kernel_gradient_squared(p.position - n->position);
+                 laplacian_visc(p.position - n->position);
     }
     // f_surface
     for (auto n : p.neighbors) {
@@ -146,8 +150,6 @@ void ParticleContainer::compute_forces() {
       p.force += k * (cohesion + curvature);
     }
     // clamp for reasonable measure and add gravity
-    p.force = glm::clamp(p.force, -100.0f, 100.0f);
-    p.force += glm::vec3(0, -9.8, 0);
   }
 }
 void ParticleContainer::compute_position() {
@@ -159,7 +161,7 @@ void ParticleContainer::compute_position() {
     p.position += timestep * p.velocity;
     // handle collisions
     if (p.position.y < -container_depth) {
-      if (glm::length(glm::vec2(p.position.x, p.position.z)) < 0.1) {
+      if (false && glm::length(glm::vec2(p.position.x, p.position.z)) < 0.2) {
         p.position.y = -container_depth;
         p.velocity.y = 1.0;
       } else {
@@ -189,7 +191,7 @@ void ParticleContainer::compute_position() {
 
 void ParticleContainer::step_physics(int n) {
   for (int i = 0; i < n; i++) {
-    find_neighboors();
+    find_neighbors();
     compute_pressure();
     compute_forces();
     compute_position();

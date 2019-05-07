@@ -26,9 +26,9 @@ int main(int argc, char *argv[]) {
   // particle shader/object
   Shader fluid_shader("src/shaders/cube.vert", "src/shaders/cube.geom",
                       "src/shaders/cube.frag");
-  glm::vec3 min(-1);
-  glm::vec3 max(1);
-  float radius = 0.1;
+  glm::vec3 min(-.25);
+  glm::vec3 max(.25);
+  float radius = 0.025;
   ParticleContainer container(min, max, radius);
 
   // pool shader/object
@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
     fluid_shader.setVec3("camera_position", g.eye);
     fluid_shader.setMat("inverse_rotation", g.inverse_rotation);
 
-    container.step_physics(1);
+    container.step_physics(5);
     container.update_instances();
     container.draw();
 
