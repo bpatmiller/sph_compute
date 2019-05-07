@@ -40,7 +40,7 @@ void ParticleContainer::draw() {
 void ParticleContainer::update_instances() {
   positions.clear();
   for (auto p : particles) {
-    positions.emplace_back(glm::vec4(p.position, p.color));
+    positions.emplace_back(glm::vec4(p.position, glm::length(p.velocity)));
   }
   VAO.ib.bindVertices(positions);
 }
@@ -164,12 +164,12 @@ void ParticleContainer::compute_forces() {
   for (uint i = 0; i < particles.size(); i++) {
     Particle &p = particles[i];
     // f_gravity
-    p.force = MASS * 2.0f * glm::vec3(0, -9.8, 0);
+    p.force = MASS* glm::vec3(0, -9.8, 0);
     // f_pressure
     for (auto n : p.neighbors) {
       if (&p == n)
         continue;
-      float coef = MASS * (p.pressure + n->pressure) / (2.0f * n->pressure);
+      float coef = p.density * MASS * (p.pressure + n->pressure) / (2.0f * n->density);
       p.force += spiky_grad(p.position - n->position) * coef;
 
       // f_viscosity
@@ -201,6 +201,12 @@ void ParticleContainer::integrate() {
     p.position +=
         (timestep * p.velocity) + (p.acceleration * timestep * timestep * 0.5f);
     // handle collisions
+    if (p.position.y < container_min.y && glm::pow(p.position.x, 2.0f) + glm::pow(p.position.z, 2.0f) < 0.1) {
+      p.position.y = container_min.y;
+      p.velocity *= damping;
+      p.velocity += glm::vec3(0,5.0,0);
+    }
+    
     for (uint j = 0; j < 3; j++) {
       if (p.position[j] < container_min[j] - particle_radius) {
         p.position[j] = container_min[j];

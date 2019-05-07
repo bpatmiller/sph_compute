@@ -30,7 +30,7 @@ struct ParticleContainer {
   float MASS = 28.0;
   float REST_DENSITY = 59.0;
   float GAS_CONST = 0.0000001;
-  float VISC = 1.3;
+  float VISC = 0.3;
   float SURF = 8.0;
   // container/tuning parameters
   glm::vec3 container_min;
@@ -52,7 +52,7 @@ struct ParticleContainer {
     container_max = c_max;
 
     // load mesh
-    create_sphere(particle_radius * 2);
+    create_sphere(particle_radius);
 
     // init scene
     init_sph(min, max);
@@ -75,7 +75,7 @@ struct ParticleContainer {
 
   void init_sph(glm::vec3 min, glm::vec3 max) {
     // generate initial positions
-    float dens = 1.5f;
+    float dens = 2.0f;
     for (float x = min.x; x <= max.x; x += h / dens) {
       for (float y = min.y; y <= max.y; y += h / dens) {
         for (float z = min.z; z <= max.z; z += h / dens) {
