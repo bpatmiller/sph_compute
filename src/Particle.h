@@ -7,6 +7,8 @@
 struct Particle {
   glm::vec3 position;
   glm::vec3 velocity;
+  glm::vec3 acceleration;
+  glm::vec3 acceleration_old;
   glm::vec3 force;
   glm::vec3 normal;
   float density;
@@ -18,6 +20,7 @@ struct Particle {
     pressure = 0;
     density = 0;
     neighbors.clear();
+    acceleration_old = glm::vec3(0);
   }
 };
 

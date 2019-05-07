@@ -26,9 +26,11 @@ int main(int argc, char *argv[]) {
   // particle shader/object
   Shader fluid_shader("src/shaders/cube.vert", "src/shaders/cube.geom",
                       "src/shaders/cube.frag");
-  glm::vec3 min(-1, -1, -1);
-  glm::vec3 max(1, 0, 1);
-  ParticleContainer container(min, max);
+  glm::vec3 min(-1, 0, -1);
+  glm::vec3 max(1, 1, 1);
+  glm::vec3 container_min(-1, -1, -1);
+  glm::vec3 container_max(3, 1, 1);
+  ParticleContainer container(min, max, container_min, container_max);
 
   // pool shader/object
   Shader pool_shader("src/shaders/pool.vert", "", "src/shaders/pool.frag");
@@ -36,9 +38,15 @@ int main(int argc, char *argv[]) {
       {-1.0f, -1.0f, -1.0f}, {-1.0f, -1.0f, 1.0f}, {1.0f, -1.0f, -1.0f},
       {1.0f, -1.0f, 1.0f},   {-1.0f, 1.0f, -1.0f}, {-1.0f, 1.0f, 1.0f},
       {1.0f, 1.0f, -1.0f},   {1.0f, 1.0f, 1.0f}};
+  // fit the pool to container size
   for (uint i = 0; i < pool_vertices.size(); i++) {
-    pool_vertices[i].x *= 5;
-    pool_vertices[i].z *= 5;
+    for (int k = 0; k < 2; k++) {
+      if (pool_vertices[i][k] == -1.0f) {
+        pool_vertices[i][k] = container_min[k];
+      } else {
+        pool_vertices[i][k] = container_max[k];
+      }
+    }
   }
   std::vector<glm::uvec3> pool_indices = {
       {0, 1, 2}, {1, 3, 2}, {0, 5, 1}, {0, 4, 5}, {2, 3, 7},

@@ -45,8 +45,11 @@ public:
   glm::vec3 light_position = glm::vec3(-1.0f, 4.0f, 0.7f);
 
   // camera properties
-  glm::vec3 eye = glm::vec3(0.0, 2.5, 4.0);
-  glm::quat orientation = glm::quat(glm::angleAxis(glm::radians(20.0f), SIDE));
+  // glm::vec3 eye = glm::vec3(0.0, 2.5, 4.0);
+  // glm::quat orientation = glm::quat(glm::angleAxis(glm::radians(20.0f),
+  // SIDE));
+  glm::vec3 eye = glm::vec3(0, 0, 4);
+  glm::quat orientation = glm::quat(glm::mat4(1));
   glm::mat4 rotation;
   glm::mat4 inverse_rotation;
   glm::vec3 fdir = FORWARD;

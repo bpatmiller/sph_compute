@@ -157,39 +157,46 @@ void ParticleContainer::compute_forces() {
     // clamp for reasonable measure and add gravity
   }
 }
+
+// 4) compute new
 void ParticleContainer::compute_position() {
 #pragma omp parallel for
   for (uint i = 0; i < particles.size(); i++) {
     Particle &p = particles[i];
+    // get current acceleration
+    p.acceleration_old = p.acceleration;
+    p.acceleration = (p.force / mass);
     // get new velocity
-    p.velocity += timestep * (p.force / mass);
+    p.velocity += timestep * ((p.acceleration + p.acceleration_old) * 0.5f);
+
     // get new position
-    p.position += timestep * p.velocity;
+    p.position +=
+        (timestep * p.velocity) + (p.acceleration * timestep * timestep * 0.5f);
     // handle collisions
-    if (p.position.y < -container_depth) {
+    if (p.position.y < container_min.y) {
       if (false && glm::length(glm::vec2(p.position.x, p.position.z)) < 0.2) {
-        p.position.y = -container_depth;
+        p.position.y = container_min.y;
         p.velocity.y = 1.0;
       } else {
-        p.position.y = -container_depth;
+        p.position.y = container_min.y;
         p.velocity.y = -p.velocity.y * damping;
       }
-    } else if (p.position.y > container_depth) {
-      p.position.y = container_depth;
+    } else if (p.position.y > container_max.y) {
+      p.position.y = container_max.y;
       p.velocity.y = -p.velocity.y * damping;
     }
-    if (p.position.x > container_width) {
-      p.position.x = container_width;
+    if (p.position.x > container_max.x) {
+      p.position.x = container_max.x;
       p.velocity.x = -p.velocity.x * damping;
-    } else if (p.position.x < -container_width) {
-      p.position.x = -container_width;
+    } else if (p.position.x < container_min.x) {
+      p.position.x = container_min.x;
       p.velocity.x = -p.velocity.x * damping;
     }
-    if (p.position.z > container_width) {
-      p.position.z = container_width;
+    if (p.position.z > container_max.z) {
+      p.position.z = container_max.z;
       p.velocity.z = -p.velocity.z * damping;
-    } else if (p.position.z < -container_width) {
-      p.position.z = -container_width;
+    } else if (p.position.z < container_min.z) {
+      p.position.z = container_min.z;
       p.velocity.z = -p.velocity.z * damping;
     }
   }

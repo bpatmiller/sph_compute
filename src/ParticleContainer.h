@@ -21,7 +21,7 @@ struct ParticleContainer {
   std::unordered_multimap<int, Particle *> block_hashmap;
   // simulation parameters
   float timestep = 1.0f / 240.0f;
-  float particle_radius = 0.1;
+  float particle_radius = 0.05;
   float h = particle_radius * 4;
   // fluid coefficients
   float mass = 28.0;                // m
@@ -30,9 +30,9 @@ struct ParticleContainer {
   float viscosity = 1.3;            // mu
   float surface_tension_coef = 8.0; // yotta
   // container/tuning parameters
-  float container_width = 5;
-  float container_depth = 1;
-  uint max_neighbors = 16;
+  glm::vec3 container_min;
+  glm::vec3 container_max;
+  uint max_neighbors = 32;
   float damping = 0.25;
   glm::vec3 g = glm::vec3(0, -9.8, 0);
   // math coefficients
@@ -43,7 +43,12 @@ struct ParticleContainer {
   const float laplacian_visc_coef = 45 / (PI * glm::pow(h, 6));
   const float C_coef = (32 / (PI * glm::pow(h, 9)));
 
-  ParticleContainer(glm::vec3 min, glm::vec3 max) {
+  ParticleContainer(glm::vec3 min, glm::vec3 max, glm::vec3 c_min,
+                    glm::vec3 c_max) {
+    // set bounds
+    container_min = c_min;
+    container_max = c_max;
+
     // load mesh
     create_sprite(particle_radius);
 
