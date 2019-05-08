@@ -24,23 +24,26 @@ int main(int argc, char *argv[]) {
   glfwSetWindowUserPointer(g.window, &g);
 
   // particle shader/object
-  Shader fluid_shader("src/shaders/cube.vert", "src/shaders/cube.geom",
-                      "src/shaders/cube.frag");
+  Shader fluid_shader("src/shaders/cube.vert", "", "src/shaders/cube.frag", "");
+  // Shader fluid_compute_shader("", "", "", "src/shaders/fluid_comp.glsl");
+
+  //
   glm::vec3 min(-0.9, 0.0, -0.45);
   glm::vec3 max(0.0, 1.0, 0.45);
   glm::vec3 container_min(-1.0, -1.0, -0.5);
   glm::vec3 container_max(1.0, 1.0, 0.5);
 
-  float scale = 2.0f;
+  float scale = 3.0f;
   min *= scale;
   max *= scale;
   container_min *= scale;
   container_max *= scale;
   ParticleContainer container(min, max, container_min, container_max);
+  //
 
   // pool shader/object
   Shader pool_shader("src/shaders/pool.vert", "src/shaders/pool.geom",
-                     "src/shaders/pool.frag");
+                     "src/shaders/pool.frag", "");
   std::vector<glm::vec3> pool_vertices = {
       {-1.0f, -1.0f, -1.0f}, {-1.0f, -1.0f, 1.0f}, {1.0f, -1.0f, -1.0f},
       {1.0f, -1.0f, 1.0f},   {-1.0f, 1.0f, -1.0f}, {-1.0f, 1.0f, 1.0f},
@@ -70,23 +73,19 @@ int main(int argc, char *argv[]) {
     // pool pass
 
     pool_shader.use();
-    pool_shader.setMat("projection", g.projection_matrix);
-    pool_shader.setMat("view", g.view_matrix);
+    pool_shader.setMat4("projection", g.projection_matrix);
+    pool_shader.setMat4("view", g.view_matrix);
 
     pool_geometry.draw();
 
     // fluid pass
     fluid_shader.use();
-    fluid_shader.setMat("projection", g.projection_matrix);
-    fluid_shader.setMat("view", g.view_matrix);
-    fluid_shader.setMat("model", container.model_matrix);
-    fluid_shader.setVec3("light_position", g.light_position);
-    fluid_shader.setVec3("camera_position", g.eye);
-    fluid_shader.setMat("inverse_rotation", g.inverse_rotation);
-
-    container.step_physics(3);
-    container.update_instances();
+    fluid_shader.setMat4("projection", g.projection_matrix);
+    fluid_shader.setMat4("view", g.view_matrix);
     container.draw();
+
+    container.step_physics(5);
+    container.update_instances();
 
     g.swapPoll();
   }

@@ -29,54 +29,65 @@ public:
     return shaderCode;
   }
 
+  GLuint compile_shader(const char *shaderCode, GLint type,
+                        std::string type_string) {
+    GLuint s = glCreateShader(type);
+    glShaderSource(s, 1, &shaderCode, NULL);
+    glCompileShader(s);
+    checkCompileErrors(s, type_string);
+    return s;
+  }
+
   Shader(const char *vertexPath, const char *geometryPath,
-         const char *fragmentPath) {
+         const char *fragmentPath, const char *computePath) {
     std::string vertCode = readShader(vertexPath);
     std::string geomCode = readShader(geometryPath);
     std::string fragCode = readShader(fragmentPath);
+    std::string compCode = readShader(computePath);
 
-    if (vertCode == "" || fragCode == "") {
-      std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+    GLuint vertex = 0, fragment = 0, geometry = 0, compute = 0;
+
+    if (vertCode != "") {
+      const char *vShaderCode = vertCode.c_str();
+      vertex = compile_shader(vShaderCode, GL_VERTEX_SHADER, "VERTEX");
     }
-
-    const char *vShaderCode = vertCode.c_str();
-    const char *fShaderCode = fragCode.c_str();
-
-    GLuint vertex, fragment;
-
-    // vertex shader
-    vertex = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex, 1, &vShaderCode, NULL);
-    glCompileShader(vertex);
-    checkCompileErrors(vertex, "VERTEX");
-    // fragment shader
-    fragment = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment, 1, &fShaderCode, NULL);
-    glCompileShader(fragment);
-    checkCompileErrors(fragment, "FRAGMENT");
-    // geometry shader
-    GLuint geometry = 0;
     if (geomCode != "") {
       const char *gShaderCode = geomCode.c_str();
-      geometry = glCreateShader(GL_GEOMETRY_SHADER);
-      glShaderSource(geometry, 1, &gShaderCode, NULL);
-      glCompileShader(geometry);
-      checkCompileErrors(geometry, "GEOMETRY");
+      geometry = compile_shader(gShaderCode, GL_GEOMETRY_SHADER, "GEOMETRY");
+    }
+    if (fragCode != "") {
+      const char *fShaderCode = fragCode.c_str();
+      fragment = compile_shader(fShaderCode, GL_FRAGMENT_SHADER, "FRAGMENT");
+    }
+    if (compCode != "") {
+      const char *cShaderCode = compCode.c_str();
+      compute = compile_shader(cShaderCode, GL_COMPUTE_SHADER, "COMPUTE");
     }
 
-    // shader Program
     ID = glCreateProgram();
-    glAttachShader(ID, vertex);
-    if (geometry)
+
+    if (vertCode != "") {
+      glAttachShader(ID, vertex);
+    }
+    if (geomCode != "") {
       glAttachShader(ID, geometry);
-    glAttachShader(ID, fragment);
+    }
+    if (fragCode != "") {
+      glAttachShader(ID, fragment);
+    }
+    if (compCode != "") {
+      glAttachShader(ID, compute);
+    }
+
     glLinkProgram(ID);
     checkCompileErrors(ID, "PROGRAM");
+
     glDeleteShader(vertex);
-    if (geometry)
-      glDeleteShader(geometry);
+    glDeleteShader(geometry);
     glDeleteShader(fragment);
+    glDeleteShader(compute);
   }
+
   // activate the shader
   // ------------------------------------------------------------------------
   void use() { glUseProgram(ID); }
@@ -94,7 +105,7 @@ public:
     glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
   }
   // ------------------------------------------------------------------------
-  void setMat(const std::string &name, glm::mat4 value) const {
+  void setMat4(const std::string &name, glm::mat4 value) const {
     glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE,
                        (const GLfloat *)&value[0][0]);
   }

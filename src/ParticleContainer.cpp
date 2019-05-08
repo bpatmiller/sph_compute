@@ -209,13 +209,26 @@ void ParticleContainer::integrate() {
 
     // fountain!
     if (fountain && p.position.y < container_min.y + 0.25 &&
-        p.position.x < container_min.x + 0.1) {
+        p.position.x < container_min.x + 0.1 && p.position.z < 0.25 &&
+        p.position.z > -0.25) {
       p.position.y = container_min.y + 0.25;
       p.position.x = container_min.x + 0.1;
       p.velocity.y *= damping;
       p.velocity.x *= damping;
-      p.velocity.y += 5.0;
-      p.velocity.x += 1.0;
+      p.velocity.y += 7.0;
+      p.velocity.x += 1.5;
+    }
+
+    // other fountain
+    if (fountain && p.position.y < container_min.y + 0.25 &&
+        p.position.x > container_max.x - 0.1 && p.position.z < 0.25 &&
+        p.position.z > -0.25) {
+      p.position.y = container_min.y + 0.25;
+      p.position.x = container_max.x - 0.1;
+      p.velocity.y *= damping;
+      p.velocity.x *= damping;
+      p.velocity.y += 7.0;
+      p.velocity.x -= 1.5;
     }
 
     // handle collisions

@@ -1,15 +1,9 @@
 #version 330 core
 out vec4 fragment_color;
-uniform vec3 light_position;
 
-// in vec3 light_direction;
-// in vec3 view_direction;
-// in vec3 normal;
-// in vec3 triangle_coords;
-// in float scale;
-in float density;
+in float d;
 
 void main() {
   fragment_color =
-      mix(vec4(0.1, 0.7, 0.3, 1), vec4(0.2, 0.4, 0.65, 1), density + 0.1);
+      mix(vec4(0.1, 0.7, 0.3, 1), vec4(0.2, 0.4, 0.65, 1), d + 0.1);
 }
