@@ -40,7 +40,7 @@ void ParticleContainer::draw() {
 void ParticleContainer::update_instances() {
   positions.clear();
   for (auto p : particles) {
-    positions.emplace_back(glm::vec4(p.position, 1.0 - (p.pressure * 100.0)));
+    positions.emplace_back(glm::vec4(p.position, p.color));
   }
   VAO.ib.bindVertices(positions);
 }
@@ -166,15 +166,18 @@ void ParticleContainer::compute_forces() {
     p.force = MASS * glm::vec3(0, -9.8, 0);
     // f_pressure
     for (auto n : p.neighbors) {
-      if (&p == n)
+      if (&p == n || p.position - n->position == glm::vec3(0))
         continue;
+
+      // f_pres
       float coef =
           p.density * MASS * (p.pressure + n->pressure) / (2.0f * n->density);
-      p.force += spiky_grad(p.position - n->position) * coef;
+      glm::vec3 f_pres = spiky_grad(p.position - n->position) * coef;
 
       // f_viscosity
-      p.force += VISC * MASS * ((n->velocity - p.velocity) / n->density) *
-                 laplacian_visc(p.position - n->position);
+      glm::vec3 f_visc = VISC * MASS *
+                         ((n->velocity - p.velocity) / n->density) *
+                         laplacian_visc(p.position - n->position);
 
       // f_surface
       float k = 2 * REST_DENSITY / (p.density + n->density);
@@ -182,7 +185,9 @@ void ParticleContainer::compute_forces() {
                            C(glm::length(p.position - n->position)) *
                            glm::normalize(p.position - n->position);
       glm::vec3 curvature = -SURF * MASS * (p.normal - n->normal);
-      p.force += k * (cohesion + curvature);
+      glm::vec3 f_surf = k * (cohesion + curvature);
+
+      p.force += f_pres + f_visc + f_surf;
     }
   }
 }
@@ -201,6 +206,18 @@ void ParticleContainer::integrate() {
     // get new position
     p.position +=
         (timestep * p.velocity) + (p.acceleration * timestep * timestep * 0.5f);
+
+    // fountain!
+    if (fountain && p.position.y < container_min.y + 0.25 &&
+        p.position.x < container_min.x + 0.1) {
+      p.position.y = container_min.y + 0.25;
+      p.position.x = container_min.x + 0.1;
+      p.velocity.y *= damping;
+      p.velocity.x *= damping;
+      p.velocity.y += 5.0;
+      p.velocity.x += 1.0;
+    }
+
     // handle collisions
     for (uint j = 0; j < 3; j++) {
       if (p.position[j] < container_min[j] - 0.001) {

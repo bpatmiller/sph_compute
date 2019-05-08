@@ -21,7 +21,7 @@ struct ParticleContainer {
   std::vector<Particle> particles;
   std::unordered_multimap<int, Particle *> block_hashmap;
   // simulation parameters
-  float timestep = 0.0005f;
+  float timestep = 0.005f;
   float particle_radius = 0.05;
   float h = particle_radius * 4;
   float GRID_SIZE = h;
@@ -44,6 +44,8 @@ struct ParticleContainer {
   const float spiky_grad_coef = 45.0f / (PI * glm::pow(h, 6));
   const float laplacian_visc_coef = 45.0f / (PI * glm::pow(h, 6));
   const float C_coef = (32.0f / (PI * glm::pow(h, 9)));
+  // toggles
+  bool fountain = true;
 
   ParticleContainer(glm::vec3 min, glm::vec3 max, glm::vec3 c_min,
                     glm::vec3 c_max) {

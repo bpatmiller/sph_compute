@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
     fluid_shader.setVec3("camera_position", g.eye);
     fluid_shader.setMat("inverse_rotation", g.inverse_rotation);
 
-    container.step_physics(5);
+    container.step_physics(3);
     container.update_instances();
     container.draw();
 

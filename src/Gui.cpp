@@ -44,7 +44,8 @@ void Gui::mousePosCallback(double mouse_x, double mouse_y) {
   current_y = mouse_y;
   if (first)
     return;
-
+  if (!mouse_pressed)
+    return;
   dx *= 0.5;
   dy *= 0.5;
 
