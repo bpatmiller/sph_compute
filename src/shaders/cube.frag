@@ -14,11 +14,11 @@ void main() {
   // 1 - density
   if (color_mode == 1) {
     fragment_color =
-        mix(vec4(0.1, 0.7, 0.3, 1), vec4(0.2, 0.4, 0.65, 1), dens / 200000.0);
+        mix(vec4(0.1, 0.7, 0.3, 1), vec4(0.2, 0.4, 0.65, 1), dens / 300000.0);
     // 2 - pressure
   } else if (color_mode == 2) {
     fragment_color =
-        mix(vec4(0.6, 0.6, 0.5, 1), vec4(0.8, 0.2, 0.65, 1), 20 * pres);
+        mix(vec4(0.6, 0.6, 0.5, 1), vec4(0.8, 0.2, 0.65, 1), 30 * pres);
     // 3 - hash
   } else if (color_mode == 3) {
     fragment_color = mix(vec4(0.7, 0.7, 0.2, 1), vec4(0.2, 0.2, 0.8, 1),
@@ -30,6 +30,6 @@ void main() {
   }
   // forces
   else {
-    fragment_color = vec4(f, 1.0);
+    fragment_color = vec4(f * 0.0001, 1.0);
   }
 }

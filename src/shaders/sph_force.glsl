@@ -48,32 +48,32 @@ int hash(vec3 position) {
 void main() {
   uint i = gl_WorkGroupID.x;
   vec3 force = MASS * vec3(0, -9.8, 0);
+  Particle p = particles[i];
 
   for (int x = -1; x <= 1; x++) {
     for (int y = -1; y <= 1; y++) {
       for (int z = -1; z <= 1; z++) {
-        vec3 current_pos = particles[i].position + vec3(x * h, y * h, z * h);
+        vec3 current_pos = p.position + vec3(x * h, y * h, z * h);
         int current_hash = hash(current_pos);
         int start_index = HashToIndex[current_hash];
         for (uint j = start_index; hash(particles[j].position) == current_hash;
              j++) {
           if (i == j)
             continue;
-          float r = distance(particles[i].position, particles[j].position);
+          float r = distance(p.position, particles[j].position);
           if (r < h && 0 < r) {
             // compute forces
             // pressure
-            float pres_coef = particles[i].density * MASS *
-                              (particles[i].pressure + particles[j].pressure) /
+            float pres_coef = p.density * MASS *
+                              (p.pressure + particles[j].pressure) /
                               (2.0 * particles[j].density);
             force +=
-                spiky_grad(particles[i].position - particles[j].position, r) *
-                pres_coef;
+                spiky_grad(p.position - particles[j].position, r) * pres_coef;
             // viscosity
-            force += VISC * MASS *
-                     ((particles[j].velocity - particles[i].velocity) /
-                      particles[j].density) *
-                     visc_lapl(particles[i].position - particles[j].position);
+            force +=
+                VISC * MASS *
+                ((particles[j].velocity - p.velocity) / particles[j].density) *
+                visc_lapl(p.position - particles[j].position);
             // TODO surface tension
             //             float k = 2 * REST_DENSITY / (p.density +
             //             n->density);
@@ -90,6 +90,7 @@ void main() {
     }
   }
 
+  clamp(force, -50.0, 50.0);
   particles[i].force = force;
 
   // brute force approach

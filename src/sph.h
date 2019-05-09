@@ -30,7 +30,7 @@ public:
   void integrate();
   void step();
   void sort_particles();
-  int hash_particle(glm::vec3 _p, float _h, int _n);
+  uint hash_particle(glm::vec3 _p, float _h, int _n);
 
   // simulation parameters
   glm::vec3 dimensions;

@@ -31,29 +31,29 @@ uniform float timestep;
 
 void main() {
   uint i = gl_WorkGroupID.x;
+  Particle p = particles[i];
 
-  vec3 new_accel = particles[i].force / MASS;
+  vec3 new_accel = p.force / MASS;
   // get new velocity
-  particles[i].velocity +=
-      timestep * ((new_accel + particles[i].acceleration) * 0.5f);
+  p.velocity += timestep * ((new_accel + p.acceleration) * 0.5f);
   // get new position
-  particles[i].position +=
-      (timestep * particles[i].velocity) +
-      (particles[i].acceleration * timestep * timestep * 0.5f);
+  p.position +=
+      (timestep * p.velocity) + (p.acceleration * timestep * timestep * 0.5f);
   // update accel
-  particles[i].acceleration = new_accel;
+  p.acceleration = new_accel;
 
   // check collisions - FIXME abstract this now, for now
   // keep in a 2x2x2 bounding box
   vec3 p_pos = particles[i].position;
   for (uint var = 0; var < 3; var++) {
-    if (p_pos[var] < -0.01) {
-      particles[i].position[var] = 0;
-      particles[i].velocity[var] *= -1;
+    if (p_pos[var] < +0.01) {
+      p.position[var] = +0.02;
+      p.velocity[var] *= -0.5;
 
-    } else if (p_pos[var] > 2.01) {
-      particles[i].position[var] = 2;
-      particles[i].velocity[var] *= -1;
+    } else if (p_pos[var] > 3.01) {
+      p.position[var] = 2.99;
+      p.velocity[var] *= -0.5;
     }
   }
+  particles[i] = p;
 }

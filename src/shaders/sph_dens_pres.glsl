@@ -43,16 +43,17 @@ int hash(vec3 position) {
 void main() {
   uint i = gl_WorkGroupID.x;
   float dens = 0;
+  Particle p = particles[i];
 
   for (int x = -1; x <= 1; x++) {
     for (int y = -1; y <= 1; y++) {
       for (int z = -1; z <= 1; z++) {
-        vec3 current_pos = particles[i].position + vec3(x * h, y * h, z * h);
+        vec3 current_pos = p.position + vec3(x * h, y * h, z * h);
         int current_hash = hash(current_pos);
         int start_index = HashToIndex[current_hash];
         for (uint j = start_index; hash(particles[j].position) == current_hash;
              j++) {
-          float r = distance(particles[i].position, particles[j].position);
+          float r = distance(p.position, particles[j].position);
           if (r < h) {
             dens += MASS * poly6(r);
           }
@@ -63,7 +64,7 @@ void main() {
 
   // brute force approach, kept for fallback
   // for (uint j = 0; j < particles_size; j++) {
-  //   float r = distance(particles[i].position, particles[j].position);
+  //   float r = distance(p.position, particles[j].position);
   //   if (r < h) {
   //     dens += MASS * poly6(r);
   //   }
@@ -71,9 +72,11 @@ void main() {
 
   // FIXME remove following line
   // its just in here to test gpu hashing
-  particles[i].hash = hash(particles[i].position);
-  particles[i]._pad0 = HashToIndex[int(particles[i].hash)];
+  // p.hash = hash(p.position);
+  p._pad0 = HashToIndex[int(p.hash)];
 
-  particles[i].density = dens;
-  particles[i].pressure = GAS_CONST * (dens - REST_DENS);
+  p.density = dens;
+  p.pressure = GAS_CONST * (dens - REST_DENS);
+
+  particles[i] = p;
 }

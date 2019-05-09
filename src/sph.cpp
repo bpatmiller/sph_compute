@@ -24,10 +24,11 @@ void SPH::init() {
   accel_vao.vb.set(hash_to_index_of_first);
 }
 
-int SPH::hash_particle(glm::vec3 _p, float _h, int _n) {
+uint SPH::hash_particle(glm::vec3 _p, float _h, int _n) {
   glm::ivec3 p_hat(glm::floor(_p / _h));
-  return ((p_hat.x * 73856093) ^ (p_hat.y * 19349663) ^ (p_hat.z * 83492791)) %
-         _n;
+  return static_cast<uint>(
+      ((p_hat.x * 73856093) ^ (p_hat.y * 19349663) ^ (p_hat.z * 83492791)) %
+      _n);
 }
 
 void SPH::sort_particles() {
