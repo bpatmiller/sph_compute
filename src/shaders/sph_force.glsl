@@ -30,6 +30,8 @@ uniform float GAS_CONST;
 uniform float REST_DENS;
 uniform float VISC;
 uniform float SURF;
+uniform vec3 repulser;
+uniform bool repulser_on;
 
 vec3 spiky_grad(vec3 r, float l) {
   return normalize(r) * pow(h - length(r), 2.0) * (45.0 / (PI * pow(h, 6)));
@@ -96,27 +98,15 @@ void main() {
     }
   }
 
-  // clamp(force, -50.0, 50.0);
-  particles[i].force = force;
+  // handle mouse controlled repulser
+  vec3 d = (p.position - repulser) * 0.2;
+  float r = length(d);
+  if (r < h && 0 < r) {
+    float rep_coef =
+        p.density * MASS * (p.pressure * 2) / (2.0 * 1000.0 * REST_DENS);
+    force += spiky_grad(d, r) * rep_coef;
+  }
 
-  // brute force approach
-  // for (uint j = 0; j < particles_size; j++) {
-  //   float r = distance(particles[i].position, particles[j].position);
-  //   if (i == j || r == 0)
-  //     continue;
-  //   if (r < h) {
-  //     // pressure force
-  //     float pres_coef = particles[i].density * MASS *
-  //                       (particles[i].pressure + particles[j].pressure) /
-  //                       (2.0 * particles[j].density);
-  //     force +=
-  //         spiky_grad(particles[i].position - particles[j].position) *
-  //         pres_coef;
-  //     // float viscosity force
-  //     force += VISC * MASS *
-  //              ((particles[j].velocity - particles[i].velocity) /
-  //              particles[])
-  //     // TODO surface tension force
-  //   }
-  // }
+  clamp(force, -5.0, 5.0);
+  particles[i].force = force;
 }

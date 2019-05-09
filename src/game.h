@@ -44,8 +44,8 @@ public:
   glm::mat4 view_matrix;
   glm::mat4 projection_matrix;
 
-  int color_mode = 1;
-  float old_time;
+  int color_mode = 6;
+  glm::vec3 repulser = glm::vec3(0);
 
   Program fluid_program;
   Program fluid_compute_dens;

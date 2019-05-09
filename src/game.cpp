@@ -27,11 +27,8 @@ void Game::create_sphere(float Radius, std::vector<glm::vec3> &s_vertices) {
 
 void Game::init() {
   simulation.dimensions = glm::vec3(15, 20, 8);
-  simulation.h = 0.1f;
+  simulation.h = 0.125f;
   simulation.box_scale = 1.5f;
-
-  // get start time
-  old_time = glfwGetTime();
 
   // compile programs
   pool_program = Program("src/shaders/pool.vert", "src/shaders/pool.geom",
@@ -142,7 +139,6 @@ void Game::update() {
 
     // compute density and pressure
     fluid_compute_dens.use();
-    fluid_compute_dens.setFloat("time", glfwGetTime());
     fluid_compute_dens.setInt("particles_size", simulation.particles.size());
     fluid_compute_dens.setInt("num_cells", simulation.num_cells);
     fluid_compute_dens.setFloat("MASS", simulation.MASS);
@@ -153,7 +149,6 @@ void Game::update() {
 
     // compute normals and TODO smooth velocities
     fluid_compute_norm_vel.use();
-    fluid_compute_norm_vel.setFloat("time", glfwGetTime());
     fluid_compute_norm_vel.setInt("particles_size",
                                   simulation.particles.size());
     fluid_compute_norm_vel.setInt("num_cells", simulation.num_cells);
@@ -166,7 +161,6 @@ void Game::update() {
 
     // compute forces
     fluid_compute_force.use();
-    fluid_compute_force.setFloat("time", glfwGetTime());
     fluid_compute_force.setInt("particles_size", simulation.particles.size());
     fluid_compute_force.setInt("num_cells", simulation.num_cells);
     fluid_compute_force.setFloat("MASS", simulation.MASS);
@@ -175,6 +169,8 @@ void Game::update() {
     fluid_compute_force.setFloat("h", simulation.h);
     fluid_compute_force.setFloat("VISC", simulation.VISC);
     fluid_compute_force.setFloat("SURF", simulation.SURF);
+    fluid_compute_force.setVec3("repulser", repulser);
+    fluid_compute_force.setBool("repulser_on", keyHeld[GLFW_KEY_R]);
     glDispatchCompute(simulation.particles.size(), 1, 1);
 
     // integrate
