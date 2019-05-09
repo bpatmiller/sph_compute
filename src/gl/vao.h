@@ -1,5 +1,4 @@
-#ifndef VAO_H
-#define VAO_H
+#pragma once
 
 #include <glad/glad.h>
 
@@ -79,5 +78,3 @@ struct VAO {
     unbind();
   }
 };
-
-#endif

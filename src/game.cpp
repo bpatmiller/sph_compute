@@ -25,45 +25,42 @@ void Game::create_sphere(float Radius, std::vector<glm::vec3> &s_vertices) {
 }
 
 void Game::init() {
+  simulation.dimensions = glm::vec3(5, 10, 5);
+  simulation.h = 0.1;
+
+  // compile programs
   pool_program = Program("src/shaders/pool.vert", "src/shaders/pool.geom",
                          "src/shaders/pool.frag", "");
   fluid_program =
       Program("src/shaders/cube.vert", "", "src/shaders/cube.frag", "");
 
-  // define particle container
-  glm::vec3 min(-0.9, 0.0, -0.45);
-  glm::vec3 max(0.0, 1.0, 0.45);
-  glm::vec3 container_min(-1.0, -1.0, -0.5);
-  glm::vec3 container_max(1.0, 1.0, 0.5);
+  // set starting camera vals
+  focus = simulation.dimensions * 0.25f * simulation.h;
+  eye = focus + glm::vec3(0, 0, 2);
 
   // init pool
   std::vector<glm::vec3> pool_vertices = {
-      {-1.0f, -1.0f, -1.0f}, {-1.0f, -1.0f, 1.0f}, {1.0f, -1.0f, -1.0f},
-      {1.0f, -1.0f, 1.0f},   {-1.0f, 1.0f, -1.0f}, {-1.0f, 1.0f, 1.0f},
-      {1.0f, 1.0f, -1.0f},   {1.0f, 1.0f, 1.0f}};
-  // fit the pool to container size
-  for (uint i = 0; i < pool_vertices.size(); i++) {
-    for (int k = 0; k < 3; k++) {
-      if (pool_vertices[i][k] == -1.0f) {
-        pool_vertices[i][k] = container_min[k];
-      } else {
-        pool_vertices[i][k] = container_max[k];
-      }
-    }
+      {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f},
+      {1.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 1.0f},
+      {1.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}};
+  for (auto &v : pool_vertices) {
+    v.x *= simulation.dimensions.x * simulation.h * 0.5f;
+    v.y *= simulation.dimensions.y * simulation.h * 0.5f;
+    v.z *= simulation.dimensions.z * simulation.h * 0.5f;
   }
-  pool.setLayout({3}, false);
-  pool.vb.set(pool_vertices);
   pool_indices = {{0, 1, 2}, {1, 3, 2}, {0, 5, 1}, {0, 4, 5}, {2, 3, 7},
                   {2, 7, 6}, {3, 1, 5}, {3, 5, 7}, {0, 2, 6}, {0, 6, 4}};
+  pool.setLayout({3}, false);
+  pool.vb.set(pool_vertices);
 
   // init particles
-  simulation.dimensions = glm::ivec3(20, 50, 20);
   simulation.init();
 
+  // init sphere, pass particle instances
   std::vector<glm::vec3> sphere_vertices;
-  create_sphere(0.025, sphere_vertices);
+  create_sphere(simulation.h * 0.25f, sphere_vertices);
   fluid.setLayout({3}, false);
-  fluid.setLayout({3, 1, 3, 1, 3, 1, 3, 1, 3, 1}, true);
+  fluid.setLayout({3}, true); //, 3, 1, 3, 1, 3, 1, 3, 1}, true);
   fluid.vb.set(sphere_vertices);
   fluid.ib.set(simulation.particles);
 }
@@ -104,6 +101,14 @@ void Game::update() {
     mouse_pos_prev = mouse_pos;
   }
 
+  // handle keypress
+  if (keyHeld[GLFW_KEY_W]) {
+    eye -= 0.01f * glm::normalize(eye - focus);
+  }
+  if (keyHeld[GLFW_KEY_S]) {
+    eye += 0.01f * glm::normalize(eye - focus);
+  }
+
   // render the pool
   pool_program.use();
   pool_program.setMat4("projection", projection_matrix);
@@ -112,6 +117,7 @@ void Game::update() {
   glDrawElements(GL_TRIANGLES, pool_indices.size() * 3, GL_UNSIGNED_INT,
                  pool_indices.data());
 
+  // render the fluids
   fluid_program.use();
   fluid_program.setMat4("projection", projection_matrix);
   fluid_program.setMat4("view", view_matrix);
@@ -119,8 +125,6 @@ void Game::update() {
   glDrawElementsInstanced(GL_TRIANGLES, sphere_indices.size() * 3,
                           GL_UNSIGNED_INT, sphere_indices.data(),
                           simulation.particles.size());
-  // glDrawElements(GL_TRIANGLES, sphere_indices.size() * 3, GL_UNSIGNED_INT,
-  //                sphere_indices.data());
 }
 
 void Game::update_camera() {

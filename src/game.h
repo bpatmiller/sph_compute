@@ -37,8 +37,8 @@ public:
   glm::vec2 mouse_pos_prev = glm::vec2(-1, -1);
   glm::vec2 mouse_diff = glm::vec2(0, 0);
   // camera properties
-  glm::vec3 focus = glm::vec3(0, -0.5, 0);
-  glm::vec3 eye = glm::vec3(0, -0.5, 2);
+  glm::vec3 focus; // = glm::vec3(0, -0.5, 0);
+  glm::vec3 eye;   // = glm::vec3(0, -0.5, 2);
   glm::quat orientation = glm::quat(glm::mat4(1));
   // camera uniforms
   glm::mat4 view_matrix;
