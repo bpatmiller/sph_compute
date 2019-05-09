@@ -14,19 +14,40 @@ layout(location = 10) in float pad1;
 uniform mat4 projection;
 uniform mat4 view;
 
-out float dens;
-out float pres;
-out float has;
-out float _p0;
-out float col;
-out vec3 f;
+out vec3 v_color;
+uniform int num_cells;
+uniform int color_mode;
 
 void main() {
-  dens = density;
-  pres = pressure;
-  has = hash;
-  _p0 = pad0;
-  col = pad1;
-  f = force;
+
   gl_Position = projection * view * vec4(position + vertex_position, 1.0);
+
+  // 1 - density
+  if (color_mode == 1) {
+    v_color =
+        mix(vec3(0.1, 0.7, 0.3), vec3(0.2, 0.4, 0.65), density / 100000.0);
+    // 2 - pressure
+  } else if (color_mode == 2) {
+    v_color = mix(vec3(0.6, 0.6, 0.5), vec3(0.8, 0.2, 0.65), 40 * pressure);
+    // 3 - hash
+  } else if (color_mode == 3) {
+    v_color = mix(vec3(0.7, 0.7, 0.2), vec3(0.2, 0.2, 0.8),
+                  float(hash) / float(num_cells));
+    // 4 - hash - to - index
+  } else if (color_mode == 4) {
+    v_color = mix(vec3(0.1, 0.0, 0.3), vec3(0.2, 0.4, 0.65),
+                  float(pad0) / float(num_cells));
+  }
+  // forces
+  else if (color_mode == 5) {
+    v_color = force * 0.0001;
+  }
+  // starting x position
+  else if (color_mode == 6) {
+    v_color = mix(vec3(0), vec3(1), pad1);
+  }
+  // normals
+  else {
+    v_color = normalize(abs(normal));
+  }
 }

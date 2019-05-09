@@ -49,6 +49,7 @@ public:
 
   Program fluid_program;
   Program fluid_compute_dens;
+  Program fluid_compute_norm_vel;
   Program fluid_compute_force;
   Program fluid_integrate;
   GLuint fluid_ssbo_id = 0;

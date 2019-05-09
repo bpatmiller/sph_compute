@@ -6,13 +6,15 @@ void SPH::init() {
   // TODO figure out a better way to tune this feature
   num_cells = int((dimensions.x * dimensions.y * dimensions.z) / 1.0);
 
-  box_dimensions = dimensions * h;
+  box_dimensions = dimensions * h * box_scale;
 
   for (int x = 0; x < dimensions.x; x++) {
     for (int y = 0; y < dimensions.y; y++) {
       for (int z = 0; z < dimensions.z; z++) {
-        Particle p(glm::vec3(0.25f * h + 0.5f * h * x, 0.25f * h + 0.5f * h * y,
-                             0.25f * h + 0.5f * h * z));
+        glm::vec3 offset = dimensions * h * 0.5f;
+        Particle p(offset + glm::vec3(0.25f * h + 0.5f * h * x,
+                                      0.25f * h + 0.5f * h * y,
+                                      0.25f * h + 0.5f * h * z));
         p._pad1 = static_cast<float>(x) / dimensions.x;
         particles.emplace_back(p);
       }

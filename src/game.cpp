@@ -26,8 +26,9 @@ void Game::create_sphere(float Radius, std::vector<glm::vec3> &s_vertices) {
 }
 
 void Game::init() {
-  simulation.dimensions = glm::vec3(20, 20, 20);
-  simulation.h = 0.1;
+  simulation.dimensions = glm::vec3(15, 20, 8);
+  simulation.h = 0.1f;
+  simulation.box_scale = 1.5f;
 
   // get start time
   old_time = glfwGetTime();
@@ -40,6 +41,7 @@ void Game::init() {
   fluid_compute_dens = Program("", "", "", "src/shaders/sph_dens_pres.glsl");
   fluid_compute_force = Program("", "", "", "src/shaders/sph_force.glsl");
   fluid_integrate = Program("", "", "", "src/shaders/sph_integrate.glsl");
+  fluid_compute_norm_vel = Program("", "", "", "src/shaders/sph_norm_vel.glsl");
 
   // init pool
   std::vector<glm::vec3> pool_vertices = {
@@ -47,9 +49,9 @@ void Game::init() {
       {1.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 1.0f},
       {1.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}};
   for (auto &v : pool_vertices) {
-    v.x *= simulation.dimensions.x * simulation.h * 1.0f;
-    v.y *= simulation.dimensions.y * simulation.h * 1.0f;
-    v.z *= simulation.dimensions.z * simulation.h * 1.0f;
+    v.x *= simulation.dimensions.x * simulation.h * simulation.box_scale;
+    v.y *= simulation.dimensions.y * simulation.h * simulation.box_scale;
+    v.z *= simulation.dimensions.z * simulation.h * simulation.box_scale;
   }
   pool_indices = {{0, 1, 2}, {1, 3, 2}, {0, 5, 1}, {0, 4, 5}, {2, 3, 7},
                   {2, 7, 6}, {3, 1, 5}, {3, 5, 7}, {0, 2, 6}, {0, 6, 4}};
@@ -133,12 +135,12 @@ void Game::update() {
                  pool_indices.data());
 
   // if (keyHeld[GLFW_KEY_P]) {
-  for (uint iteration = 0; iteration < 3; iteration++) {
+  for (uint iteration = 0; iteration < 10; iteration++) {
     // sort particles and poulate a map of index -> index pairs
     simulation.sort_particles();
     fluid.ib.update(simulation.particles, 0);
 
-    // step the fluids
+    // compute density and pressure
     fluid_compute_dens.use();
     fluid_compute_dens.setFloat("time", glfwGetTime());
     fluid_compute_dens.setInt("particles_size", simulation.particles.size());
@@ -149,6 +151,20 @@ void Game::update() {
     fluid_compute_dens.setFloat("h", simulation.h);
     glDispatchCompute(simulation.particles.size(), 1, 1);
 
+    // compute normals and TODO smooth velocities
+    fluid_compute_norm_vel.use();
+    fluid_compute_norm_vel.setFloat("time", glfwGetTime());
+    fluid_compute_norm_vel.setInt("particles_size",
+                                  simulation.particles.size());
+    fluid_compute_norm_vel.setInt("num_cells", simulation.num_cells);
+    fluid_compute_norm_vel.setFloat("MASS", simulation.MASS);
+    fluid_compute_norm_vel.setFloat("GAS_CONST", simulation.GAS_CONST);
+    fluid_compute_norm_vel.setFloat("REST_DENS", simulation.REST_DENSITY);
+    fluid_compute_norm_vel.setFloat("h", simulation.h);
+    fluid_compute_norm_vel.setFloat("VISC", simulation.VISC);
+    glDispatchCompute(simulation.particles.size(), 1, 1);
+
+    // compute forces
     fluid_compute_force.use();
     fluid_compute_force.setFloat("time", glfwGetTime());
     fluid_compute_force.setInt("particles_size", simulation.particles.size());
@@ -158,8 +174,10 @@ void Game::update() {
     fluid_compute_force.setFloat("REST_DENS", simulation.REST_DENSITY);
     fluid_compute_force.setFloat("h", simulation.h);
     fluid_compute_force.setFloat("VISC", simulation.VISC);
+    fluid_compute_force.setFloat("SURF", simulation.SURF);
     glDispatchCompute(simulation.particles.size(), 1, 1);
 
+    // integrate
     fluid_integrate.use();
     fluid_integrate.setFloat("time", glfwGetTime());
     fluid_integrate.setInt("particles_size", simulation.particles.size());
@@ -169,7 +187,7 @@ void Game::update() {
     fluid_integrate.setFloat("REST_DENS", simulation.REST_DENSITY);
     fluid_integrate.setFloat("h", simulation.h);
     fluid_integrate.setFloat("VISC", simulation.VISC);
-    fluid_integrate.setFloat("timestep", 0.00125f);
+    fluid_integrate.setFloat("timestep", simulation.timestep);
     fluid_integrate.setVec3("box_dimensions", simulation.box_dimensions);
     glDispatchCompute(simulation.particles.size(), 1, 1);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -201,5 +219,6 @@ void Game::update_camera() {
   mouse_diff *= 0.1f;
   glm::quat qyaw = glm::angleAxis(glm::radians(mouse_diff.y), SIDE);
   glm::quat qpitch = glm::angleAxis(glm::radians(mouse_diff.x), UP);
+  // translate eye to focus, perform rotation
   orientation = qyaw * orientation * qpitch;
 }

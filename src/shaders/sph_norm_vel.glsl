@@ -29,11 +29,11 @@ uniform float MASS;
 uniform float GAS_CONST;
 uniform float REST_DENS;
 
-float poly6(float r) {
-  return 315.0f * pow(h * h - r * r, 3.0f) / (64.0f * PI * pow(h, 9.0f));
+float poly6_grad(vec3 r, float l) {
+  return (-945.0f / (32 * PI * pow(h, 9))) * r *
+         pow((pow(h, 2) - pow(l, 2)), 2);
 }
-
-int hash(vec3 position) {
+uint hash(vec3 position) {
   vec3 p_hat = floor(position / h);
   return ((int(p_hat.x) * 73856093) ^ (int(p_hat.y) * 19349663) ^
           (int(p_hat.z) * 83492791)) %
@@ -42,26 +42,29 @@ int hash(vec3 position) {
 
 void main() {
   uint i = gl_WorkGroupID.x;
-  float dens = 0;
   Particle p = particles[i];
+  vec3 normal = vec3(0);
 
   for (int x = -1; x <= 1; x++) {
     for (int y = -1; y <= 1; y++) {
       for (int z = -1; z <= 1; z++) {
         vec3 current_pos = p.position + vec3(x * h, y * h, z * h);
-        int current_hash = hash(current_pos);
+        uint current_hash = hash(current_pos);
         int start_index = HashToIndex[current_hash];
         for (uint j = start_index; hash(particles[j].position) == current_hash;
              j++) {
+          if (i == j)
+            continue;
           float r = distance(p.position, particles[j].position);
           if (r < h) {
-            dens += MASS * poly6(r);
+            normal +=
+                (MASS / particles[j].density) *
+                poly6_grad(particles[i].position - particles[j].position, r);
           }
         }
       }
     }
   }
 
-  particles[i].density = dens;
-  particles[i].pressure = GAS_CONST * (dens - REST_DENS);
+  particles[i].normal = normal;
 }

@@ -35,6 +35,7 @@ public:
   // simulation parameters
   glm::vec3 dimensions;
   glm::vec3 box_dimensions;
+  float box_scale = 1.0f;
   int num_cells;
   // particle vector
   std::vector<Particle> particles;
@@ -42,11 +43,12 @@ public:
   VAO accel_vao;
   //
   float h = 0.1;
+  float timestep = 0.001f;
 
   float MASS = 28.0;
   float REST_DENSITY = 59.0;
   float GAS_CONST = 0.0000001;
-  float VISC = 0.8;
+  float VISC = 1.3;
   float SURF = 8.0;
 
   //   float PI = 3.14159265358979323846264338327950288;
