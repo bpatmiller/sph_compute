@@ -71,7 +71,7 @@ void main() {
 
   // FIXME remove following line
   // its just in here to test gpu hashing
-  // particles[i].hash = hash(particles[i].position);
+  particles[i].hash = hash(particles[i].position);
   particles[i]._pad0 = HashToIndex[int(particles[i].hash)];
 
   particles[i].density = dens;

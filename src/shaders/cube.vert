@@ -18,13 +18,13 @@ out float dens;
 out float pres;
 out float has;
 out float _p0;
-out float f_mag;
+out vec3 f;
 
 void main() {
   dens = density;
   pres = pressure;
   has = hash;
   _p0 = pad0;
-  f_mag = length(force);
+  f = force;
   gl_Position = projection * view * vec4(position + vertex_position, 1.0);
 }

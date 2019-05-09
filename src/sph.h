@@ -8,15 +8,15 @@ struct Particle {
   Particle(glm::vec3 p) { position = p; }
 
   glm::vec3 position;
-  float density; // 4
-  glm::vec3 velocity;
-  float pressure; // 8
-  glm::vec3 acceleration;
-  float hash; // 12
+  float density = 0; // 4
+  glm::vec3 velocity = glm::vec3(0);
+  float pressure = 0; // 8
+  glm::vec3 acceleration = glm::vec3(0);
+  float hash = 0; // 12
   glm::vec3 force;
-  float _pad0; // 16
-  glm::vec3 normal;
-  float _pad1; // 20
+  float _pad0 = 0; // 16
+  glm::vec3 normal = glm::vec3(0);
+  float _pad1 = 0; // 20
 };
 
 class SPH {

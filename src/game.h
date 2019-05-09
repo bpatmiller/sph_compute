@@ -45,9 +45,12 @@ public:
   glm::mat4 projection_matrix;
 
   int color_mode = 1;
+  float old_time;
 
   Program fluid_program;
   Program fluid_compute_dens;
+  Program fluid_compute_force;
+  Program fluid_integrate;
   GLuint fluid_ssbo_id = 0;
   GLuint accel_ssbo_id = 0;
   VAO fluid;

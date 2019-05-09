@@ -29,12 +29,17 @@ void Game::init() {
   simulation.dimensions = glm::vec3(20, 20, 20);
   simulation.h = 0.1;
 
+  // get start time
+  old_time = glfwGetTime();
+
   // compile programs
   pool_program = Program("src/shaders/pool.vert", "src/shaders/pool.geom",
                          "src/shaders/pool.frag", "");
   fluid_program =
       Program("src/shaders/cube.vert", "", "src/shaders/cube.frag", "");
   fluid_compute_dens = Program("", "", "", "src/shaders/sph_dens_pres.glsl");
+  fluid_compute_force = Program("", "", "", "src/shaders/sph_force.glsl");
+  fluid_integrate = Program("", "", "", "src/shaders/sph_integrate.glsl");
 
   // init pool
   std::vector<glm::vec3> pool_vertices = {
@@ -62,7 +67,7 @@ void Game::init() {
   fluid.vb.set(sphere_vertices);
   fluid.ib.set(simulation.particles);
 
-  // partical SSBO for compute shader
+  // particle SSBO for compute shader
   glGenBuffers(1, &fluid_ssbo_id);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, fluid_ssbo_id);
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, fluid.ib.id);
@@ -72,7 +77,7 @@ void Game::init() {
   glGenBuffers(1, &accel_ssbo_id);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, accel_ssbo_id);
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, simulation.accel_vao.vb.id);
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 1);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 void Game::update() {
@@ -84,7 +89,7 @@ void Game::update() {
   view_matrix =
       glm::translate(glm::mat4(1.0f), -eye) * glm::mat4_cast(orientation);
   projection_matrix = glm::perspective(
-      glm::radians(80.0f), ((float)window_width) / window_height, 0.01f, 20.f);
+      glm::radians(60.0f), ((float)window_width) / window_height, 0.01f, 20.f);
 
   // clear render, set params
   glViewport(0, 0, window_width, window_height);
@@ -132,6 +137,7 @@ void Game::update() {
   fluid.ib.update(simulation.particles, 0);
 
   // step the fluids
+
   fluid_compute_dens.use();
   fluid_compute_dens.setFloat("time", glfwGetTime());
   fluid_compute_dens.setInt("particles_size", simulation.particles.size());
@@ -141,6 +147,40 @@ void Game::update() {
   fluid_compute_dens.setFloat("REST_DENS", simulation.REST_DENSITY);
   fluid_compute_dens.setFloat("h", simulation.h);
   glDispatchCompute(simulation.particles.size(), 1, 1);
+
+  fluid_compute_force.use();
+  fluid_compute_force.setFloat("time", glfwGetTime());
+  fluid_compute_force.setInt("particles_size", simulation.particles.size());
+  fluid_compute_force.setInt("num_cells", simulation.num_cells);
+  fluid_compute_force.setFloat("MASS", simulation.MASS);
+  fluid_compute_force.setFloat("GAS_CONST", simulation.GAS_CONST);
+  fluid_compute_force.setFloat("REST_DENS", simulation.REST_DENSITY);
+  fluid_compute_force.setFloat("h", simulation.h);
+  fluid_compute_force.setFloat("VISC", simulation.VISC);
+  glDispatchCompute(simulation.particles.size(), 1, 1);
+
+  fluid_integrate.use();
+  fluid_integrate.setFloat("time", glfwGetTime());
+  fluid_integrate.setInt("particles_size", simulation.particles.size());
+  fluid_integrate.setInt("num_cells", simulation.num_cells);
+  fluid_integrate.setFloat("MASS", simulation.MASS);
+  fluid_integrate.setFloat("GAS_CONST", simulation.GAS_CONST);
+  fluid_integrate.setFloat("REST_DENS", simulation.REST_DENSITY);
+  fluid_integrate.setFloat("h", simulation.h);
+  fluid_integrate.setFloat("VISC", simulation.VISC);
+  fluid_integrate.setFloat("timestep", 0.0025f);
+  glDispatchCompute(simulation.particles.size(), 1, 1);
+
+  glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, fluid.ib.id);
+
+  Particle *read_data =
+      (Particle *)glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
+  for (int i = 0; i < simulation.num_cells; i++) {
+    simulation.particles[i] = read_data[i];
+  }
+  glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 
   // render the fluids
   fluid_program.use();
