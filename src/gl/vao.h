@@ -47,21 +47,22 @@ struct VAO {
 
   void bind() { glBindVertexArray(vao); }
 
-  void buf_bind(bool instanced) {
+  static void unbind() { glBindVertexArray(0); }
+
+  void setLayout(std::initializer_list<uint> sizes, bool instanced) {
+    
+    bind();
     if (instanced) {
       ib.bind();
     } else {
       vb.bind();
     }
-  }
-
-  static void unbind() { glBindVertexArray(0); }
-
-  void setLayout(std::initializer_list<uint> sizes, bool instanced) {
-    bind();
-    buf_bind(instanced);
 
     int stride = 0;
+    for (size_t size : sizes) {
+      stride += size;
+    }
+
     size_t offset = 0;
     for (int size : sizes) {
       glEnableVertexAttribArray(attCt);
@@ -70,8 +71,8 @@ struct VAO {
       if (instanced) {
         glVertexAttribDivisor(attCt, 1);
       }
-      attCt++;
       offset += size * sizeof(float);
+      attCt++;
     }
 
     VBO::unbind();

@@ -60,7 +60,7 @@ void Game::init() {
   std::vector<glm::vec3> sphere_vertices;
   create_sphere(simulation.h * 0.25f, sphere_vertices);
   fluid.setLayout({3}, false);
-  fluid.setLayout({3}, true); //, 3, 1, 3, 1, 3, 1, 3, 1}, true);
+  fluid.setLayout({3, 1, 3, 1, 3, 1, 3, 1, 3, 1}, true);
   fluid.vb.set(sphere_vertices);
   fluid.ib.set(simulation.particles);
 }
