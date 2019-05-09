@@ -1,4 +1,4 @@
-#include "ParticleContainer.h"
+#include "sim.h"
 #include <glm/gtx/string_cast.hpp>
 #include <iostream>
 #include <math.h>
@@ -7,7 +7,7 @@
 // ================================================
 // rendering functions
 // ================================================
-void ParticleContainer::create_sphere(float Radius) {
+void SPH::create_sphere(float Radius) {
   int Stacks = 5;
   int Slices = 5;
 
@@ -30,14 +30,14 @@ void ParticleContainer::create_sphere(float Radius) {
   }
 }
 
-void ParticleContainer::draw() {
+void SPH::draw() {
   VAO.bind();
   glDrawElementsInstanced(GL_TRIANGLES, face_indices.size() * 3,
                           GL_UNSIGNED_INT, face_indices.data(),
                           positions.size());
 }
 
-void ParticleContainer::update_instances() {
+void SPH::update_instances() {
   positions.clear();
   for (auto p : particles) {
     positions.emplace_back(glm::vec4(p.position, p.color));
@@ -48,34 +48,32 @@ void ParticleContainer::update_instances() {
 // ================================================
 // smoothing kernel functions
 // ================================================
-float ParticleContainer::poly6(float r) {
+float SPH::poly6(float r) {
   return POLY6_COEF * glm::pow(glm::pow(h, 2) - glm::pow(r, 2), 3);
 }
 
-glm::vec3 ParticleContainer::poly6_grad(glm::vec3 r) {
+glm::vec3 SPH::poly6_grad(glm::vec3 r) {
   return POLY6_GRAD_COEF * r *
          glm::pow((glm::pow(h, 2.0f) - glm::pow(glm::length(r), 2.0f)), 2.0f);
 }
 
-float ParticleContainer::spiky(float r) {
-  return SPIKY_COEF * glm::pow(h - r, 3.0f);
-}
+float SPH::spiky(float r) { return SPIKY_COEF * glm::pow(h - r, 3.0f); }
 
-glm::vec3 ParticleContainer::spiky_grad(glm::vec3 r) {
+glm::vec3 SPH::spiky_grad(glm::vec3 r) {
   return spiky_grad_coef * glm::normalize(r) *
          glm::pow(h - glm::length(r), 2.0f);
 }
 
-float ParticleContainer::poly6_laplac(glm::vec3 r) {
+float SPH::poly6_laplac(glm::vec3 r) {
   return POLY6_GRAD_COEF * (glm::pow(h, 2.0f) - glm::length2(r)) *
          (3.0f * h * h - 7 * glm::length2(r));
 }
 
-float ParticleContainer::laplacian_visc(glm::vec3 r) {
+float SPH::laplacian_visc(glm::vec3 r) {
   return laplacian_visc_coef * (h - glm::length(r));
 }
 
-float ParticleContainer::C(float r) {
+float SPH::C(float r) {
   if (2 * r > h && r <= h) {
     return C_coef * glm::pow(h - r, 3) * glm::pow(r, 3);
   } else if (r > 0 && 2 * r <= h) {
@@ -89,7 +87,7 @@ float ParticleContainer::C(float r) {
 // spatial hashing
 // ================================================
 
-int ParticleContainer::hash(glm::vec3 p) {
+int SPH::hash(glm::vec3 p) {
   glm::ivec3 p_hat(glm::floor(p / h));
   return ((p_hat.x * 73856093) ^ (p_hat.y * 19349663) ^ (p_hat.z * 83492791)) %
          NUM_CELLS;
@@ -101,7 +99,7 @@ int ParticleContainer::hash(glm::vec3 p) {
 
 // 1) find each particles neighbors
 //  and compute density at each particle
-void ParticleContainer::compute_neighbors_density() {
+void SPH::compute_neighbors_density() {
   // build unordered multimap
   block_hashmap.clear();
   for (uint i = 0; i < particles.size(); i++) {
@@ -139,7 +137,7 @@ void ParticleContainer::compute_neighbors_density() {
 }
 
 // 2) compute pressure and normans = 1ls for each particle
-void ParticleContainer::compute_pressure() {
+void SPH::compute_pressure() {
 #pragma omp parallel for
   for (uint i = 0; i < particles.size(); i++) {
     Particle &p = particles[i];
@@ -158,7 +156,7 @@ void ParticleContainer::compute_pressure() {
 
 // 3) compute the forces acting on each particle
 // gravity, pressure, viscosity, surface tension
-void ParticleContainer::compute_forces() {
+void SPH::compute_forces() {
 #pragma omp parallel for
   for (uint i = 0; i < particles.size(); i++) {
     Particle &p = particles[i];
@@ -193,7 +191,7 @@ void ParticleContainer::compute_forces() {
 }
 
 // 4) compute new
-void ParticleContainer::integrate() {
+void SPH::integrate() {
 #pragma omp parallel for
   for (uint i = 0; i < particles.size(); i++) {
     Particle &p = particles[i];
@@ -248,7 +246,7 @@ void ParticleContainer::integrate() {
   }
 }
 
-void ParticleContainer::step_physics(int n) {
+void SPH::step_physics(int n) {
   for (int i = 0; i < n; i++) {
     compute_neighbors_density();
     compute_pressure();

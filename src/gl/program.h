@@ -1,15 +1,15 @@
-#ifndef SHADER_H
-#define SHADER_H
+#pragma once
 
 #include <glad/glad.h>
 
+#include <glm/glm.hpp>
 #include <GLFW/glfw3.h>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
 
-class Shader {
+class Program {
 public:
   unsigned int ID;
 
@@ -38,7 +38,11 @@ public:
     return s;
   }
 
-  Shader(const char *vertexPath, const char *geometryPath,
+  Program() {
+    
+  }
+
+  Program(const char *vertexPath, const char *geometryPath,
          const char *fragmentPath, const char *computePath) {
     std::string vertCode = readShader(vertexPath);
     std::string geomCode = readShader(geometryPath);
@@ -154,4 +158,3 @@ private:
     }
   }
 };
-#endif

@@ -7,41 +7,44 @@
 #include <glm/gtx/io.hpp>
 #include <vector>
 
-struct VertexBuf {
-  unsigned int vbo;
+struct VBO {
+  GLuint id = 0;
 
-  VertexBuf() { glGenBuffers(1, &vbo); }
+  VBO() { glGenBuffers(1, &id); }
 
-  ~VertexBuf() { glDeleteBuffers(1, &vbo); }
+  ~VBO() { glDeleteBuffers(1, &id); }
 
-  void bind() { glBindBuffer(GL_ARRAY_BUFFER, vbo); }
+  void bind() { glBindBuffer(GL_ARRAY_BUFFER, id); }
 
   static void unbind() { glBindBuffer(GL_ARRAY_BUFFER, 0); }
 
-  void bindVertices(const std::vector<glm::vec3> &vertices) {
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3),
-                 vertices.data(), GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+  template <typename T>
+  VBO& set(const std::vector<T> &vertices, GLenum usage = GL_STATIC_DRAW) {
+    bind();
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(T),
+                 vertices.data(), usage);
+    unbind();
+    return *this;
   }
 
-  void bindVertices(const std::vector<glm::vec4> &vertices) {
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec4),
-                 vertices.data(), GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+  template <typename T>
+  VBO& update(const std::vector<T> &vertices , size_t index) {
+        bind();
+        glBufferSubData(GL_ARRAY_BUFFER, index, vertices.size() * sizeof(T), vertices.data());
+        unbind();
+        return *this;
   }
 };
 
-struct VertexArr {
+struct VAO {
   unsigned int vao;
-  VertexBuf vb;
-  VertexBuf ib;
+  VBO vb;
+  VBO ib;
   int attCt = 0;
 
-  VertexArr() { glGenVertexArrays(1, &vao); }
+  VAO() { glGenVertexArrays(1, &vao); }
 
-  ~VertexArr() { glDeleteVertexArrays(1, &vao); }
+  ~VAO() { glDeleteVertexArrays(1, &vao); }
 
   void bind() { glBindVertexArray(vao); }
 
@@ -72,7 +75,7 @@ struct VertexArr {
       offset += size * sizeof(float);
     }
 
-    VertexBuf::unbind();
+    VBO::unbind();
     unbind();
   }
 };

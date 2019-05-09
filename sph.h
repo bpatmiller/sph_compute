@@ -1,23 +1,29 @@
-#ifndef PARTICLECONTAINER_H
-#define PARTICLECONTAINER_H
+#pragma once
 
-#include "Particle.h"
-#include "VAO.h"
+#include "gl/vao.h"
 #include <glm/gtx/transform.hpp>
 #include <iostream>
 #include <thread>
 #include <unordered_map>
 #include <vector>
 
-struct ParticleContainer {
-  // render objects
-  VertexArr VAO;
-  glm::mat4 model_matrix;
-  std::vector<glm::vec3> vertices;
-  std::vector<glm::uvec3> face_indices;
-  // instance vector
-  std::vector<glm::vec4> positions;
-  // particles and particle - hash map
+struct Particle {
+  Particle(glm::vec3 p) { position = p; }
+
+  glm::vec3 position;
+  float density;      // 4
+  glm::vec3 velocity;
+  float pressure;     // 8
+  glm::vec3 acceleration;
+  float color;        // 12
+  glm::vec3 force;
+  float _pad0;        // 16
+  glm::vec3 normal;
+  float _pad1;         //20
+};
+
+struct SPH {
+
   std::vector<Particle> particles;
   std::unordered_multimap<int, Particle *> block_hashmap;
   // simulation parameters
@@ -45,10 +51,9 @@ struct ParticleContainer {
   const float laplacian_visc_coef = 45.0f / (PI * glm::pow(h, 6));
   const float C_coef = (32.0f / (PI * glm::pow(h, 9)));
   // toggles
-  bool fountain = true;
+  bool fountain = false;
 
-  ParticleContainer(glm::vec3 min, glm::vec3 max, glm::vec3 c_min,
-                    glm::vec3 c_max) {
+  SPH(glm::vec3 min, glm::vec3 max, glm::vec3 c_min, glm::vec3 c_max) {
     // set bounds
     container_min = c_min;
     container_max = c_max;
@@ -63,15 +68,7 @@ struct ParticleContainer {
                 glm::pow(GRID_SIZE, 3.0f);
 
     // bind vao
-    VAO.vb.bindVertices(vertices);
-    VAO.ib.bindVertices(positions);
-    VAO.setLayout({3}, false);
-    VAO.setLayout({4}, true);
-    // define cube scale
-    model_matrix = glm::scale(glm::vec3(1));
   }
-  void draw();
-  void update_instances();
   void create_sphere(float Radius);
   void create_sprite(float Radius);
 
@@ -84,9 +81,7 @@ struct ParticleContainer {
           float jitter =
               0.01f * static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
           Particle p = Particle(glm::vec3(x, y, z + jitter));
-          p.color = (x - min.x) / (max.x - min.x);
           particles.emplace_back(p);
-          positions.emplace_back(glm::vec4(p.position, p.density));
         }
       }
     }
@@ -109,5 +104,3 @@ struct ParticleContainer {
   void integrate();
   void step_physics(int n);
 };
-
-#endif
