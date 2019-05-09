@@ -62,14 +62,20 @@ void Game::init() {
   fluid.vb.set(sphere_vertices);
   fluid.ib.set(simulation.particles);
 
-  // SSBO for compute shader
+  // partical SSBO for compute shader
   glGenBuffers(1, &fluid_ssbo_id);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, fluid_ssbo_id);
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, fluid.ib.id);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
   // spatial acceleratio structure
-  hash_to_index_of_first.resize(simulation.num_cells);
+  simulation.hash_to_index_of_first.resize(simulation.num_cells);
+
+  // spatial acceleration SSBO
+  // glGenBuffers(1, &accel_ssbo_id);
+  // glBindBuffer(GL_SHADER_STORAGE_BUFFER, accel_ssbo_id);
+  // glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, simulation.);
+  // glBindBuffer(GL_SHADER_STORAGE_BUFFER, 1);
 }
 
 void Game::update() {
@@ -124,30 +130,7 @@ void Game::update() {
   glDrawElements(GL_TRIANGLES, pool_indices.size() * 3, GL_UNSIGNED_INT,
                  pool_indices.data());
 
-  // hash each particle
-  for (auto &p : simulation.particles) {
-    p.hash = SPH::hash_particle(p.position, simulation.h, simulation.num_cells);
-  }
-  // sort particles by hash
-  auto hash_compare = [](Particle &a, Particle &b) { return a.hash < b.hash; };
-  std::sort(simulation.particles.begin(), simulation.particles.end(),
-            hash_compare);
-  hash_to_index_of_first.clear();
-  // for each particle, if the hash is new
-  // add the index of that particle to hash_to_first_index
-  // so that a block with a given hash can access the first
-  // instance of blocks with the same hash
-  int current_firstseen_hash = -1;
-  int current_firstseen_index = -1;
-  for (uint i = 0; i < simulation.particles.size(); i++) {
-    // when you see a new key, add the new value to the index
-    // you see it in
-    if (simulation.particles[i].hash != current_firstseen_hash) {
-      current_firstseen_hash = simulation.particles[i].hash;
-      current_firstseen_index = i;
-    }
-    //  simulparticles[i].hash_to_f_index = current_firstseen_index;
-  }
+  simulation.sort_particles();
 
   // step the fluids
   fluid_compute_dens.use();

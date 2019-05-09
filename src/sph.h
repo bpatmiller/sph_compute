@@ -23,7 +23,7 @@ public:
   SPH() { dimensions = glm::vec3(0); };
   SPH(int x, int y, int z) {
     dimensions = glm::vec3(x, y, z);
-    num_cells = x * y * z;
+    num_cells = (x * y * z);
   }
   void init();
   void compute_density();
@@ -31,13 +31,15 @@ public:
   void compute_forces();
   void integrate();
   void step();
-  static int hash_particle(glm::vec3 p, float h, int n);
+  void sort_particles();
+  int hash_particle(glm::vec3 _p, float _h, int _n);
 
   // simulation parameters
   glm::vec3 dimensions;
   int num_cells;
   // particle vector
   std::vector<Particle> particles;
+  std::vector<int> hash_to_index_of_first;
   //
   float h = 0.1;
 
@@ -54,4 +56,4 @@ public:
   //   float SPIKY_GRAD_COEF = 45.0f / (PI * glm::pow(h, 6));
   //   float VISC_LAPL_COEF = 45.0f / (PI * glm::pow(h, 6));
   //   float C_coef = (32.0f / (PI * glm::pow(h, 9)));
-  // };
+};

@@ -49,6 +49,7 @@ public:
   Program fluid_program;
   Program fluid_compute_dens;
   GLuint fluid_ssbo_id = 0;
+  GLuint accel_ssbo_id = 0;
   VAO fluid;
   SPH simulation;
   std::vector<int> hash_to_index_of_first;
