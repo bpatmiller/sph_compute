@@ -26,9 +26,13 @@ public:
   void update();
   void update_camera();
   void create_sphere(float Radius, std::vector<glm::vec3> &s_vertices);
+  glm::vec3 screenspace_to_world(glm::vec2 coords, glm::vec4 viewport);
+  bool intersect_sphere(glm::vec3 ray_direction, glm::vec3 p);
+  void mouse_ray_intersect();
 
   // window ptr
   GLFWwindow *window;
+  int window_width, window_height;
   // key control
   std::map<int, bool> keyHeld;
   // mouse control
@@ -39,13 +43,14 @@ public:
   // camera properties
   glm::vec3 focus = glm::vec3(0, 0, 0);
   glm::vec3 eye = glm::vec3(0, 0, 4);
+  glm::vec4 camera = glm::vec4(0);
   glm::quat orientation = glm::quat(glm::mat4(1));
   // camera uniforms
   glm::mat4 view_matrix;
   glm::mat4 projection_matrix;
 
   int color_mode = 6;
-  glm::vec3 repulser = glm::vec3(0);
+  glm::vec3 repulser = glm::vec3(-99, -99, -99);
 
   Program fluid_program;
   Program fluid_compute_dens;

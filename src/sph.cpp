@@ -1,10 +1,14 @@
 #include "sph.h"
 #include <algorithm>
+#include <iostream>
 
 void SPH::init() {
   particles.clear();
-  // TODO figure out a better way to tune this feature
+  // FIXME figure out a better way to tune this feature
+  // and adjust the hash function
   num_cells = int((dimensions.x * dimensions.y * dimensions.z) / 1.0);
+
+  std::cout << "Intilizing SPH with " << num_cells << " particles" << std::endl;
 
   box_dimensions = dimensions * h * box_scale;
 

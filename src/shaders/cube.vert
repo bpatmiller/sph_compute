@@ -44,7 +44,7 @@ void main() {
   }
   // starting x position
   else if (color_mode == 6) {
-    v_color = mix(vec3(0), vec3(1), pad1);
+    v_color = mix(vec3(0.1, 0.7, 0.3), vec3(0.2, 0.4, 0.65), pad1);
   }
   // normals
   else {
