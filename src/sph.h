@@ -1,5 +1,6 @@
 #pragma once
 
+#include "gl/vao.h"
 #include <glm/glm.hpp>
 #include <vector>
 
@@ -40,6 +41,7 @@ public:
   // particle vector
   std::vector<Particle> particles;
   std::vector<int> hash_to_index_of_first;
+  VAO accel_vao;
   //
   float h = 0.1;
 

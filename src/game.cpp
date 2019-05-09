@@ -68,14 +68,11 @@ void Game::init() {
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, fluid.ib.id);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-  // spatial acceleratio structure
-  simulation.hash_to_index_of_first.resize(simulation.num_cells);
-
   // spatial acceleration SSBO
-  // glGenBuffers(1, &accel_ssbo_id);
-  // glBindBuffer(GL_SHADER_STORAGE_BUFFER, accel_ssbo_id);
-  // glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, simulation.);
-  // glBindBuffer(GL_SHADER_STORAGE_BUFFER, 1);
+  glGenBuffers(1, &accel_ssbo_id);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, accel_ssbo_id);
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, simulation.accel_vao.vb.id);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 1);
 }
 
 void Game::update() {
@@ -130,6 +127,7 @@ void Game::update() {
   glDrawElements(GL_TRIANGLES, pool_indices.size() * 3, GL_UNSIGNED_INT,
                  pool_indices.data());
 
+  // sort particles and poulate a map of index -> index pairs
   simulation.sort_particles();
 
   // step the fluids

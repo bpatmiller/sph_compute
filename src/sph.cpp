@@ -14,6 +14,13 @@ void SPH::init() {
       }
     }
   }
+
+  // resize hash vector
+  hash_to_index_of_first.resize(num_cells);
+
+  // create VAO
+  accel_vao.setLayout({1}, false);
+  accel_vao.vb.set(hash_to_index_of_first);
 }
 
 int SPH::hash_particle(glm::vec3 _p, float _h, int _n) {
@@ -45,4 +52,5 @@ void SPH::sort_particles() {
       hash_to_index_of_first[current_firstseen_hash] = i;
     }
   }
+  // FIXME maybe update VAO
 }

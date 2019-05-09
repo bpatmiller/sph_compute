@@ -21,6 +21,11 @@ layout(std430, binding=0) buffer ParticleBlock
     Particle particles[];
 };
 
+layout(std430, binding=1) buffer HashToIndexBlock
+{
+  int HashToIndex[];
+};
+
 const float PI =  3.1415927410125732421875f;
 
 uniform int particles_size;
