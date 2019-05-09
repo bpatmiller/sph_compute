@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
   glfwSetErrorCallback(glfw_error_callback);
   if (!glfwInit())
     exit(EXIT_FAILURE);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   GLFWwindow *window = glfwCreateWindow(640, 480, "sph", NULL, NULL);
   if (!window) {

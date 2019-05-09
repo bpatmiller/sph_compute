@@ -25,7 +25,7 @@ void Game::create_sphere(float Radius, std::vector<glm::vec3> &s_vertices) {
 }
 
 void Game::init() {
-  simulation.dimensions = glm::vec3(5, 10, 5);
+  simulation.dimensions = glm::vec3(20, 20, 20);
   simulation.h = 0.1;
 
   // compile programs
@@ -33,10 +33,7 @@ void Game::init() {
                          "src/shaders/pool.frag", "");
   fluid_program =
       Program("src/shaders/cube.vert", "", "src/shaders/cube.frag", "");
-
-  // set starting camera vals
-  focus = simulation.dimensions * 0.25f * simulation.h;
-  eye = focus + glm::vec3(0, 0, 2);
+  fluid_compute_dens = Program("", "", "", "src/shaders/sph_dens_pres.glsl");
 
   // init pool
   std::vector<glm::vec3> pool_vertices = {
@@ -44,9 +41,9 @@ void Game::init() {
       {1.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 1.0f},
       {1.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}};
   for (auto &v : pool_vertices) {
-    v.x *= simulation.dimensions.x * simulation.h * 0.5f;
-    v.y *= simulation.dimensions.y * simulation.h * 0.5f;
-    v.z *= simulation.dimensions.z * simulation.h * 0.5f;
+    v.x *= simulation.dimensions.x * simulation.h * 1.0f;
+    v.y *= simulation.dimensions.y * simulation.h * 1.0f;
+    v.z *= simulation.dimensions.z * simulation.h * 1.0f;
   }
   pool_indices = {{0, 1, 2}, {1, 3, 2}, {0, 5, 1}, {0, 4, 5}, {2, 3, 7},
                   {2, 7, 6}, {3, 1, 5}, {3, 5, 7}, {0, 2, 6}, {0, 6, 4}};
@@ -63,6 +60,12 @@ void Game::init() {
   fluid.setLayout({3, 1, 3, 1, 3, 1, 3, 1, 3, 1}, true);
   fluid.vb.set(sphere_vertices);
   fluid.ib.set(simulation.particles);
+
+  // SSBO for compute shader
+  glGenBuffers(1, &fluid_ssbo_id);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, fluid_ssbo_id);
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, fluid.ib.id);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 void Game::update() {
@@ -116,6 +119,11 @@ void Game::update() {
   pool.bind();
   glDrawElements(GL_TRIANGLES, pool_indices.size() * 3, GL_UNSIGNED_INT,
                  pool_indices.data());
+
+  // // step the fluids
+  fluid_compute_dens.use();
+  fluid_compute_dens.setFloat("time", glfwGetTime());
+  glDispatchCompute(simulation.particles.size(), 1, 1);
 
   // render the fluids
   fluid_program.use();
