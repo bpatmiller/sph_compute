@@ -14,9 +14,9 @@ struct Particle {
   glm::vec3 acceleration = glm::vec3(0);
   float hash = 0; // 12
   glm::vec3 force;
-  float _pad0 = 0; // 16
+  float _pad0 = 0; // 16 informally defines the index of the first instance
   glm::vec3 normal = glm::vec3(0);
-  float _pad1 = 0; // 20
+  float _pad1 = 0; // 20 informally defines starting color
 };
 
 class SPH {
@@ -34,6 +34,7 @@ public:
 
   // simulation parameters
   glm::vec3 dimensions;
+  glm::vec3 box_dimensions;
   int num_cells;
   // particle vector
   std::vector<Particle> particles;

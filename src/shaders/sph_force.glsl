@@ -90,7 +90,7 @@ void main() {
     }
   }
 
-  clamp(force, -50.0, 50.0);
+  // clamp(force, -50.0, 50.0);
   particles[i].force = force;
 
   // brute force approach

@@ -18,6 +18,7 @@ out float dens;
 out float pres;
 out float has;
 out float _p0;
+out float col;
 out vec3 f;
 
 void main() {
@@ -25,6 +26,7 @@ void main() {
   pres = pressure;
   has = hash;
   _p0 = pad0;
+  col = pad1;
   f = force;
   gl_Position = projection * view * vec4(position + vertex_position, 1.0);
 }

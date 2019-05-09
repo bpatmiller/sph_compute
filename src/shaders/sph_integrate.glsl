@@ -18,6 +18,7 @@ layout(std430) struct Particle {
 layout(std430, binding = 0) buffer ParticleBlock { Particle particles[]; };
 
 const float PI = 3.1415927410125732421875f;
+const float EPS = 0.0001;
 
 uniform int particles_size;
 uniform int num_cells;
@@ -28,6 +29,14 @@ uniform float GAS_CONST;
 uniform float REST_DENS;
 uniform float VISC;
 uniform float timestep;
+uniform vec3 box_dimensions;
+
+uint hash(vec3 position) {
+  vec3 p_hat = floor(position / h);
+  return ((uint(p_hat.x) * 73856093) ^ (uint(p_hat.y) * 19349663) ^
+          (uint(p_hat.z) * 83492791)) %
+         num_cells;
+}
 
 void main() {
   uint i = gl_WorkGroupID.x;
@@ -46,14 +55,16 @@ void main() {
   // keep in a 2x2x2 bounding box
   vec3 p_pos = particles[i].position;
   for (uint var = 0; var < 3; var++) {
-    if (p_pos[var] < +0.01) {
-      p.position[var] = +0.02;
+    if (p_pos[var] < 0) {
+      p.position[var] = EPS;
       p.velocity[var] *= -0.5;
 
-    } else if (p_pos[var] > 3.01) {
-      p.position[var] = 2.99;
+    } else if (p_pos[var] > box_dimensions[var]) {
+      p.position[var] = box_dimensions[var] - EPS;
       p.velocity[var] *= -0.5;
     }
   }
+
+  p.hash = hash(p.position);
   particles[i] = p;
 }

@@ -6,12 +6,15 @@ void SPH::init() {
   // TODO figure out a better way to tune this feature
   num_cells = int((dimensions.x * dimensions.y * dimensions.z) / 1.0);
 
+  box_dimensions = dimensions * h;
+
   for (int x = 0; x < dimensions.x; x++) {
     for (int y = 0; y < dimensions.y; y++) {
       for (int z = 0; z < dimensions.z; z++) {
-        particles.emplace_back(Particle(glm::vec3(0.25f * h + 0.5f * h * x,
-                                                  0.25f * h + 0.5f * h * y,
-                                                  0.25f * h + 0.5f * h * z)));
+        Particle p(glm::vec3(0.25f * h + 0.5f * h * x, 0.25f * h + 0.5f * h * y,
+                             0.25f * h + 0.5f * h * z));
+        p._pad1 = static_cast<float>(x) / dimensions.x;
+        particles.emplace_back(p);
       }
     }
   }
@@ -33,9 +36,9 @@ uint SPH::hash_particle(glm::vec3 _p, float _h, int _n) {
 
 void SPH::sort_particles() {
   // hash each particle
-  for (auto &p : particles) {
-    p.hash = hash_particle(p.position, h, num_cells);
-  }
+  // for (auto &p : particles) {
+  //   p.hash = hash_particle(p.position, h, num_cells);
+  // }
   // sort particles by hash
   auto hash_compare = [](Particle &a, Particle &b) { return a.hash < b.hash; };
   std::sort(particles.begin(), particles.end(), hash_compare);

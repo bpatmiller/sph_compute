@@ -26,7 +26,7 @@ void Game::create_sphere(float Radius, std::vector<glm::vec3> &s_vertices) {
 }
 
 void Game::init() {
-  simulation.dimensions = glm::vec3(25, 20, 25);
+  simulation.dimensions = glm::vec3(20, 20, 20);
   simulation.h = 0.1;
 
   // get start time
@@ -118,10 +118,10 @@ void Game::update() {
 
   // handle keypress
   if (keyHeld[GLFW_KEY_W]) {
-    eye -= 0.01f * glm::normalize(eye - focus);
+    eye -= 0.05f * glm::normalize(eye - focus);
   }
   if (keyHeld[GLFW_KEY_S]) {
-    eye += 0.01f * glm::normalize(eye - focus);
+    eye += 0.05f * glm::normalize(eye - focus);
   }
 
   // render the pool
@@ -133,8 +133,7 @@ void Game::update() {
                  pool_indices.data());
 
   // if (keyHeld[GLFW_KEY_P]) {
-  for (uint i = 0; i < 3; i++) {
-
+  for (uint iteration = 0; iteration < 3; iteration++) {
     // sort particles and poulate a map of index -> index pairs
     simulation.sort_particles();
     fluid.ib.update(simulation.particles, 0);
@@ -150,8 +149,6 @@ void Game::update() {
     fluid_compute_dens.setFloat("h", simulation.h);
     glDispatchCompute(simulation.particles.size(), 1, 1);
 
-    glMemoryBarrier(GL_ALL_BARRIER_BITS);
-
     fluid_compute_force.use();
     fluid_compute_force.setFloat("time", glfwGetTime());
     fluid_compute_force.setInt("particles_size", simulation.particles.size());
@@ -163,8 +160,6 @@ void Game::update() {
     fluid_compute_force.setFloat("VISC", simulation.VISC);
     glDispatchCompute(simulation.particles.size(), 1, 1);
 
-    glMemoryBarrier(GL_ALL_BARRIER_BITS);
-
     fluid_integrate.use();
     fluid_integrate.setFloat("time", glfwGetTime());
     fluid_integrate.setInt("particles_size", simulation.particles.size());
@@ -174,23 +169,19 @@ void Game::update() {
     fluid_integrate.setFloat("REST_DENS", simulation.REST_DENSITY);
     fluid_integrate.setFloat("h", simulation.h);
     fluid_integrate.setFloat("VISC", simulation.VISC);
-    fluid_integrate.setFloat("timestep", 0.000125f);
+    fluid_integrate.setFloat("timestep", 0.00125f);
+    fluid_integrate.setVec3("box_dimensions", simulation.box_dimensions);
     glDispatchCompute(simulation.particles.size(), 1, 1);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
-    glMemoryBarrier(GL_ALL_BARRIER_BITS);
     // copy data back to cpu memory
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, fluid.ib.id);
     Particle *read_data =
         (Particle *)glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
     uint n_p = simulation.particles.size();
-    for (uint i = 0; i < n_p; i++) {
-      simulation.particles[i] = read_data[i];
-    }
+    std::copy(&read_data[0], &read_data[n_p], simulation.particles.begin());
     glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
   }
-
-  // check for degeneracy?
 
   // render the fluids
   fluid_program.use();
