@@ -22,9 +22,7 @@ struct Particle {
 class SPH {
 public:
   SPH() { dimensions = glm::vec3(0); };
-  SPH(int x, int y, int z) {
-    dimensions = glm::vec3(x, y, z);
-  }
+  SPH(int x, int y, int z) { dimensions = glm::vec3(x, y, z); }
   void init();
   void compute_density();
   void compute_pressure();

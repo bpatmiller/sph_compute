@@ -5,6 +5,7 @@ in float dens;
 in float pres;
 in float has;
 in float _p0;
+in float f_mag;
 
 uniform int num_cells;
 uniform int color_mode;
@@ -22,9 +23,14 @@ void main() {
   } else if (color_mode == 3) {
     fragment_color = mix(vec4(0.7, 0.7, 0.2, 1), vec4(0.2, 0.2, 0.8, 1),
                          float(has) / float(num_cells));
-    // other
-  } else {
+    // 4 - forces
+  } else if (color_mode == 4) {
     fragment_color = mix(vec4(0.1, 0.0, 0.3, 1), vec4(0.2, 0.4, 0.65, 1),
                          float(_p0) / float(num_cells));
+  }
+  // other
+  else {
+    fragment_color = mix(vec4(0.9, 0.9, 0.9, 1), vec4(0.9, 0.05, 0.05, 1),
+                         float(f_mag) / float(10000.0));
   }
 }

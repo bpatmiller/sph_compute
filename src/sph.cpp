@@ -3,7 +3,8 @@
 
 void SPH::init() {
   particles.clear();
-  num_cells = int((dimensions.x * dimensions.y * dimensions.z) / 8.0);
+  // TODO figure out a better way to tune this feature
+  num_cells = int((dimensions.x * dimensions.y * dimensions.z) / 4.0);
 
   for (int x = 0; x < dimensions.x; x++) {
     for (int y = 0; y < dimensions.y; y++) {
