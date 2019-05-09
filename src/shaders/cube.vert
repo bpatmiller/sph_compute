@@ -16,9 +16,13 @@ uniform mat4 view;
 
 out float dens;
 out float pres;
+out float has;
+out float _p0;
 
 void main() {
   dens = density;
   pres = pressure;
+  has = hash;
+  _p0 = pad0;
   gl_Position = projection * view * vec4(position + vertex_position, 1.0);
 }

@@ -28,6 +28,9 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action,
   if (key == GLFW_KEY_3) {
     game->color_mode = 3;
   }
+  if (key == GLFW_KEY_4) {
+    game->color_mode = 4;
+  }
   // movement
   if (action == GLFW_PRESS) {
     game->keyHeld[key] = true;

@@ -53,4 +53,5 @@ void SPH::sort_particles() {
     }
   }
   // FIXME maybe update VAO
+  accel_vao.vb.update(hash_to_index_of_first, 0);
 }

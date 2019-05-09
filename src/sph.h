@@ -24,7 +24,6 @@ public:
   SPH() { dimensions = glm::vec3(0); };
   SPH(int x, int y, int z) {
     dimensions = glm::vec3(x, y, z);
-    num_cells = (x * y * z);
   }
   void init();
   void compute_density();

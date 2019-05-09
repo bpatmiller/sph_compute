@@ -1,9 +1,8 @@
 #version 430 core
 
-layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
-layout(std430) struct Particle
-{
+layout(std430) struct Particle {
   vec3 position;
   float density; // 4
   vec3 velocity;
@@ -16,17 +15,11 @@ layout(std430) struct Particle
   float _pad1; // 20
 };
 
-layout(std430, binding=0) buffer ParticleBlock
-{
-    Particle particles[];
-};
+layout(std430, binding = 0) buffer ParticleBlock { Particle particles[]; };
 
-layout(std430, binding=1) buffer HashToIndexBlock
-{
-  int HashToIndex[];
-};
+layout(std430, binding = 1) buffer HashToIndexBlock { int HashToIndex[]; };
 
-const float PI =  3.1415927410125732421875f;
+const float PI = 3.1415927410125732421875f;
 
 uniform int particles_size;
 uniform int num_cells;
@@ -37,29 +30,29 @@ uniform float GAS_CONST;
 uniform float REST_DENS;
 
 float poly6(float r) {
-   return 315.0f * pow(h * h - r * r, 3.0f) / (64.0f * PI * pow(h, 9.0f));
+  return 315.0f * pow(h * h - r * r, 3.0f) / (64.0f * PI * pow(h, 9.0f));
 }
 
-vec3 spiky_grad(vec3 r) {
-
-}
+vec3 spiky_grad(vec3 r) {}
 
 void main() {
-      uint i = gl_WorkGroupID.x;
-        vec3 force = vec3(0);
-      for (uint j = 0; j < particles_size; j++) {
-        float r = distance(particles[i].position, particles[j].position);
-        if (i == j || r == 0)
-            continue;
-        if (r < h ) {
-            // pressure force
-            float pres_coef = particles[i].density * MASS * (particles[i].pressure + particles[j].pressure) / (2.0 * particles[j].density);
-            force += spiky_grad(particles[i].position - particles[j].position) * pres_coef;
-            // float viscosity force
-            force += VISC * MASS *((particles[j].velocity - particles[i].velocity) / particles[])
-            // TODO surface tension force
-
-        }        
-      }
- 
+  uint i = gl_WorkGroupID.x;
+  vec3 force = vec3(0);
+  for (uint j = 0; j < particles_size; j++) {
+    float r = distance(particles[i].position, particles[j].position);
+    if (i == j || r == 0)
+      continue;
+    if (r < h) {
+      // pressure force
+      float pres_coef = particles[i].density * MASS *
+                        (particles[i].pressure + particles[j].pressure) /
+                        (2.0 * particles[j].density);
+      force +=
+          spiky_grad(particles[i].position - particles[j].position) * pres_coef;
+      // float viscosity force
+      force += VISC * MASS *
+               ((particles[j].velocity - particles[i].velocity) / particles[])
+      // TODO surface tension force
+    }
+  }
 }

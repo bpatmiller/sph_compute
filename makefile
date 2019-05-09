@@ -7,7 +7,7 @@ build:
 
 .PHONY: format
 format:
-	clang-format -i src/*.cpp src/*.h src/shaders/*.vert src/shaders/*.frag
+	clang-format -i src/*.cpp src/*.h src/shaders/*.vert src/shaders/*
 
 .PHONY: clean
 clean:

@@ -26,7 +26,7 @@ void Game::create_sphere(float Radius, std::vector<glm::vec3> &s_vertices) {
 }
 
 void Game::init() {
-  simulation.dimensions = glm::vec3(10, 10, 10);
+  simulation.dimensions = glm::vec3(20, 20, 20);
   simulation.h = 0.1;
 
   // compile programs
@@ -129,6 +129,7 @@ void Game::update() {
 
   // sort particles and poulate a map of index -> index pairs
   simulation.sort_particles();
+  fluid.ib.update(simulation.particles, 0);
 
   // step the fluids
   fluid_compute_dens.use();
@@ -146,6 +147,7 @@ void Game::update() {
   fluid_program.setMat4("projection", projection_matrix);
   fluid_program.setMat4("view", view_matrix);
   fluid_program.setInt("color_mode", color_mode);
+  fluid_program.setInt("num_cells", simulation.num_cells);
   fluid.bind();
   glDrawElementsInstanced(GL_TRIANGLES, sphere_indices.size() * 3,
                           GL_UNSIGNED_INT, sphere_indices.data(),
