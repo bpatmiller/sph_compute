@@ -11,7 +11,7 @@ struct Particle {
   glm::vec3 velocity;
   float pressure; // 8
   glm::vec3 acceleration;
-  float color; // 12
+  float hash; // 12
   glm::vec3 force;
   float _pad0; // 16
   glm::vec3 normal;
@@ -20,17 +20,22 @@ struct Particle {
 
 class SPH {
 public:
-  SPH() { dimensions = glm::ivec3(0); };
-  SPH(int x, int y, int z) { dimensions = glm::vec3(x, y, z); }
+  SPH() { dimensions = glm::vec3(0); };
+  SPH(int x, int y, int z) {
+    dimensions = glm::vec3(x, y, z);
+    num_cells = x * y * z;
+  }
   void init();
   void compute_density();
   void compute_pressure();
   void compute_forces();
   void integrate();
   void step();
+  static int hash_particle(glm::vec3 p, float h, int n);
 
   // simulation parameters
   glm::vec3 dimensions;
+  int num_cells;
   // particle vector
   std::vector<Particle> particles;
   //
@@ -42,11 +47,11 @@ public:
   float VISC = 0.8;
   float SURF = 8.0;
 
-  float PI = 3.14159265358979323846264338327950288;
-  float POLY6_COEF = 315.0f / (64 * PI * glm::pow(h, 9));
-  float POLY6_GRAD_COEF = -945.0f / (32 * PI * glm::pow(h, 9));
-  float SPIKY_COEF = 15.0f / (PI * glm::pow(h, 6.0f));
-  float SPIKY_GRAD_COEF = 45.0f / (PI * glm::pow(h, 6));
-  float VISC_LAPL_COEF = 45.0f / (PI * glm::pow(h, 6));
-  float C_coef = (32.0f / (PI * glm::pow(h, 9)));
-};
+  //   float PI = 3.14159265358979323846264338327950288;
+  //   float POLY6_COEF = 315.0f / (64 * PI * glm::pow(h, 9));
+  //   float POLY6_GRAD_COEF = -945.0f / (32 * PI * glm::pow(h, 9));
+  //   float SPIKY_COEF = 15.0f / (PI * glm::pow(h, 6.0f));
+  //   float SPIKY_GRAD_COEF = 45.0f / (PI * glm::pow(h, 6));
+  //   float VISC_LAPL_COEF = 45.0f / (PI * glm::pow(h, 6));
+  //   float C_coef = (32.0f / (PI * glm::pow(h, 9)));
+  // };

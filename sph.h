@@ -15,7 +15,7 @@ struct Particle {
   glm::vec3 velocity;
   float pressure;     // 8
   glm::vec3 acceleration;
-  float color;        // 12
+  float hash;        // 12
   glm::vec3 force;
   float _pad0;        // 16
   glm::vec3 normal;

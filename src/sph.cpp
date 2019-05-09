@@ -12,3 +12,9 @@ void SPH::init() {
     }
   }
 }
+
+int SPH::hash_particle(glm::vec3 p, float h, int n) {
+  glm::ivec3 p_hat(glm::floor(p / h));
+  return ((p_hat.x * 73856093) ^ (p_hat.y * 19349663) ^ (p_hat.z * 83492791)) %
+         n;
+}

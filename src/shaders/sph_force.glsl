@@ -35,21 +35,26 @@ float poly6(float r) {
    return 315.0f * pow(h * h - r * r, 3.0f) / (64.0f * PI * pow(h, 9.0f));
 }
 
-int hash(vec3 position) {
-  vec3 p_hat = floor(position / h);
-  return ((int(p_hat.x) * 73856093) ^ (int(p_hat.y) * 19349663) ^ (int(p_hat.z) * 83492791)) % num_cells;
+vec3 spiky_grad(vec3 r) {
+
 }
 
 void main() {
       uint i = gl_WorkGroupID.x;
-      float dens = 0;
+        vec3 force = vec3(0);
       for (uint j = 0; j < particles_size; j++) {
         float r = distance(particles[i].position, particles[j].position);
+        if (i == j || r == 0)
+            continue;
         if (r < h ) {
-          dens += MASS * poly6(r);
+            // pressure force
+            float pres_coef = particles[i].density * MASS * (particles[i].pressure + particles[j].pressure) / (2.0 * particles[j].density);
+            force += spiky_grad(particles[i].position - particles[j].position) * pres_coef;
+            // float viscosity force
+            force += VISC * MASS *((particles[j].velocity - particles[i].velocity) / particles[])
+            // TODO surface tension force
+
         }        
       }
-
-    particles[i].density = dens;
-    particles[i].pressure = GAS_CONST * ( dens - REST_DENS );  
+ 
 }

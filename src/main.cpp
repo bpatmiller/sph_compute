@@ -13,10 +13,22 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action,
                  int mods) {
   Game *game = (Game *)glfwGetWindowUserPointer(window);
 
+  // quit
   if (key == GLFW_KEY_Q) {
     glfwSetWindowShouldClose(window, GLFW_TRUE);
     return;
   }
+  // color modes
+  if (key == GLFW_KEY_1) {
+    game->color_mode = 1;
+  }
+  if (key == GLFW_KEY_2) {
+    game->color_mode = 2;
+  }
+  if (key == GLFW_KEY_3) {
+    game->color_mode = 3;
+  }
+  // movement
   if (action == GLFW_PRESS) {
     game->keyHeld[key] = true;
   } else if (action == GLFW_RELEASE) {

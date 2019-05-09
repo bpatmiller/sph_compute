@@ -1,4 +1,5 @@
 #include "game.h"
+#include <algorithm>
 
 void Game::create_sphere(float Radius, std::vector<glm::vec3> &s_vertices) {
   int Stacks = 5;
@@ -25,7 +26,7 @@ void Game::create_sphere(float Radius, std::vector<glm::vec3> &s_vertices) {
 }
 
 void Game::init() {
-  simulation.dimensions = glm::vec3(20, 20, 20);
+  simulation.dimensions = glm::vec3(10, 10, 10);
   simulation.h = 0.1;
 
   // compile programs
@@ -66,6 +67,9 @@ void Game::init() {
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, fluid_ssbo_id);
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, fluid.ib.id);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+  // spatial acceleratio structure
+  hash_to_index_of_first.resize(simulation.num_cells);
 }
 
 void Game::update() {
@@ -120,15 +124,47 @@ void Game::update() {
   glDrawElements(GL_TRIANGLES, pool_indices.size() * 3, GL_UNSIGNED_INT,
                  pool_indices.data());
 
-  // // step the fluids
+  // hash each particle
+  for (auto &p : simulation.particles) {
+    p.hash = SPH::hash_particle(p.position, simulation.h, simulation.num_cells);
+  }
+  // sort particles by hash
+  auto hash_compare = [](Particle &a, Particle &b) { return a.hash < b.hash; };
+  std::sort(simulation.particles.begin(), simulation.particles.end(),
+            hash_compare);
+  hash_to_index_of_first.clear();
+  // for each particle, if the hash is new
+  // add the index of that particle to hash_to_first_index
+  // so that a block with a given hash can access the first
+  // instance of blocks with the same hash
+  int current_firstseen_hash = -1;
+  int current_firstseen_index = -1;
+  for (uint i = 0; i < simulation.particles.size(); i++) {
+    // when you see a new key, add the new value to the index
+    // you see it in
+    if (simulation.particles[i].hash != current_firstseen_hash) {
+      current_firstseen_hash = simulation.particles[i].hash;
+      current_firstseen_index = i;
+    }
+    //  simulparticles[i].hash_to_f_index = current_firstseen_index;
+  }
+
+  // step the fluids
   fluid_compute_dens.use();
   fluid_compute_dens.setFloat("time", glfwGetTime());
+  fluid_compute_dens.setInt("particles_size", simulation.particles.size());
+  fluid_compute_dens.setInt("num_cells", simulation.num_cells);
+  fluid_compute_dens.setFloat("MASS", simulation.MASS);
+  fluid_compute_dens.setFloat("GAS_CONST", simulation.GAS_CONST);
+  fluid_compute_dens.setFloat("REST_DENS", simulation.REST_DENSITY);
+  fluid_compute_dens.setFloat("h", simulation.h);
   glDispatchCompute(simulation.particles.size(), 1, 1);
 
   // render the fluids
   fluid_program.use();
   fluid_program.setMat4("projection", projection_matrix);
   fluid_program.setMat4("view", view_matrix);
+  fluid_program.setInt("color_mode", color_mode);
   fluid.bind();
   glDrawElementsInstanced(GL_TRIANGLES, sphere_indices.size() * 3,
                           GL_UNSIGNED_INT, sphere_indices.data(),

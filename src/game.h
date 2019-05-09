@@ -44,11 +44,14 @@ public:
   glm::mat4 view_matrix;
   glm::mat4 projection_matrix;
 
+  int color_mode = 1;
+
   Program fluid_program;
   Program fluid_compute_dens;
   GLuint fluid_ssbo_id = 0;
   VAO fluid;
   SPH simulation;
+  std::vector<int> hash_to_index_of_first;
   std::vector<glm::uvec3> sphere_indices;
 
   Program pool_program;
