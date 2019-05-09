@@ -26,9 +26,11 @@ void Game::create_sphere(float Radius, std::vector<glm::vec3> &s_vertices) {
 }
 
 void Game::init() {
-  simulation.dimensions = glm::vec3(15, 20, 8);
-  simulation.h = 0.125f;
+  simulation.dimensions = glm::vec3(10, 15, 10);
+  simulation.h = 0.14f;
   simulation.box_scale = 1.5f;
+
+  focus = simulation.dimensions * simulation.h * simulation.box_scale * 0.5f;
 
   // compile programs
   pool_program = Program("src/shaders/pool.vert", "src/shaders/pool.geom",
@@ -85,8 +87,9 @@ void Game::update() {
   glfwGetWindowSize(window, &window_width, &window_height);
 
   // pass camera uniforms
-  view_matrix =
-      glm::translate(glm::mat4(1.0f), -eye) * glm::mat4_cast(orientation);
+  view_matrix = glm::translate(glm::mat4(1.0f), -eye) *
+                glm::mat4_cast(orientation) *
+                glm::translate(glm::mat4(1.0f), -focus);
   projection_matrix = glm::perspective(
       glm::radians(60.0f), ((float)window_width) / window_height, 0.01f, 20.f);
 
@@ -117,10 +120,10 @@ void Game::update() {
 
   // handle keypress
   if (keyHeld[GLFW_KEY_W]) {
-    eye -= 0.05f * glm::normalize(eye - focus);
+    eye -= 0.05f * glm::normalize(eye); // - focus);
   }
   if (keyHeld[GLFW_KEY_S]) {
-    eye += 0.05f * glm::normalize(eye - focus);
+    eye += 0.05f * glm::normalize(eye); // - focus);
   }
 
   // render the pool
@@ -215,6 +218,9 @@ void Game::update_camera() {
   mouse_diff *= 0.1f;
   glm::quat qyaw = glm::angleAxis(glm::radians(mouse_diff.y), SIDE);
   glm::quat qpitch = glm::angleAxis(glm::radians(mouse_diff.x), UP);
-  // translate eye to focus, perform rotation
   orientation = qyaw * orientation * qpitch;
 }
+
+// void Game::mouse_ray_intersection() {
+
+// }
