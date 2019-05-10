@@ -3,8 +3,8 @@
 #include <glm/gtc/random.hpp>
 
 void Game::create_sphere(float Radius, std::vector<glm::vec3> &s_vertices) {
-  int Stacks = 6;
-  int Slices = 6;
+  int Stacks = 8;
+  int Slices = 8;
   s_vertices.clear();
 
   for (int i = 0; i <= Stacks; ++i) {
@@ -33,12 +33,12 @@ void Game::init() {
   render_mode = 2;
 
   // 2400 particles
-  // simulation.dimensions = glm::vec3(20, 15, 8);
-  // PHYSICS_STEPS = 10;
+  simulation.dimensions = glm::vec3(20, 15, 8);
+  PHYSICS_STEPS = 10;
 
   // 4800 particles
-  simulation.dimensions = glm::vec3(40, 15, 8);
-  PHYSICS_STEPS = 5;
+  // simulation.dimensions = glm::vec3(40, 15, 8);
+  // PHYSICS_STEPS = 5;
 
   // 6000 particles
   // simulation.dimensions = glm::vec3(30, 20, 10);
@@ -84,7 +84,7 @@ void Game::init() {
 
   // init sphere, pass particle instances
   std::vector<glm::vec3> sphere_vertices;
-  create_sphere(simulation.h * 0.5f, sphere_vertices);
+  create_sphere(simulation.h * 0.25f, sphere_vertices);
   fluid.setLayout({3}, false);
   fluid.setLayout({3, 1, 3, 1, 3, 1, 3, 1, 3, 1}, true);
   fluid.vb.set(sphere_vertices);
@@ -124,7 +124,7 @@ void Game::init() {
   // }
 
   // some gl settings
-  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  glClearColor(0.85f, 0.85f, 0.85f, 0.85f);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
   glEnable(GL_BLEND);

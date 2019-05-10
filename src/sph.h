@@ -24,11 +24,6 @@ public:
   SPH() { dimensions = glm::vec3(0); };
   SPH(int x, int y, int z) { dimensions = glm::vec3(x, y, z); }
   void init();
-  void compute_density();
-  void compute_pressure();
-  void compute_forces();
-  void integrate();
-  void step();
   void sort_particles();
   uint hash_particle(glm::vec3 _p, float _h, int _n);
 
@@ -41,7 +36,7 @@ public:
   std::vector<Particle> particles;
   std::vector<int> hash_to_index_of_first;
   VAO accel_vao;
-  //
+  // simulation constants
   float h = 0.1;
   float timestep = 0.0025f;
 
@@ -49,13 +44,5 @@ public:
   float REST_DENSITY = 59.0;
   float GAS_CONST = 0.0000001;
   float VISC = 1.3;
-  float SURF = 8.0;
-
-  //   float PI = 3.14159265358979323846264338327950288;
-  //   float POLY6_COEF = 315.0f / (64 * PI * glm::pow(h, 9));
-  //   float POLY6_GRAD_COEF = -945.0f / (32 * PI * glm::pow(h, 9));
-  //   float SPIKY_COEF = 15.0f / (PI * glm::pow(h, 6.0f));
-  //   float SPIKY_GRAD_COEF = 45.0f / (PI * glm::pow(h, 6));
-  //   float VISC_LAPL_COEF = 45.0f / (PI * glm::pow(h, 6));
-  //   float C_coef = (32.0f / (PI * glm::pow(h, 9)));
+  float SURF = 18.0;
 };

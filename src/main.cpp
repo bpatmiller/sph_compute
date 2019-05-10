@@ -21,8 +21,12 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action,
   // toggle render mode
   if (key == GLFW_KEY_R && action == GLFW_RELEASE) {
     game->toggle_render_mode();
-  } if (key == GLFW_KEY_P && action == GLFW_RELEASE) {
-    game->pipe = ! game->pipe;
+  }
+  if (key == GLFW_KEY_P && action == GLFW_RELEASE) {
+    game->pipe = !game->pipe;
+  }
+  if (key == GLFW_KEY_O && action == GLFW_RELEASE) {
+    game->simulation.init();
   }
   // color modes
   if (key == GLFW_KEY_1) {

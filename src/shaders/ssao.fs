@@ -1,4 +1,4 @@
-#version 330 core
+#version 430 core
 out vec4 fragment_color;
 uniform vec2 resolution;
 in vec2 uv;
@@ -7,35 +7,23 @@ uniform sampler2D depTex;
 uniform int renderMode;
 
 #define PI 3.14159265
-// user variables
+
 float width = resolution.x;
 float height = resolution.y;
 
-float zNear = 0.1;
+float zNear = 0.01;
 float zFar = 20.0;
 float strength = 1.0;
 
-int samples = 8;    // ao sample count //64.0
-float radius = 5.0; // ao radius //5.0
+int samples = 32;
+float radius = 15.0;
+float aoclamp = 0.125;
+float noiseamount = 0.0002;
+float diffarea = 0.3;
+float gdisplace = 0.4;
+float lumInfluence = 0.7;
 
-float aoclamp = 0.125;      // depth clamp - reduces haloing at screen edges
-bool noise = true;          // use noise instead of pattern for sample dithering
-float noiseamount = 0.0002; // dithering amount
-
-float diffarea = 0.3;  // self-shadowing reduction
-float gdisplace = 0.4; // gauss bell center //0.4
-
-bool mist = false;     // use mist?
-float miststart = 0.0; // mist start
-float mistend = zFar;  // mist end
-
-bool onlyAO = false;      // use only ambient occlusion pass?
-float lumInfluence = 0.7; // how much luminance affects occlusion
-
-//--------------------------------------------------------
-
-vec2 rand(vec2 coord) // generating noise/pattern texture for dithering
-{
+vec2 rand(vec2 coord) {
   float noiseX = ((fract(1.0 - coord.s * (width / 2.0)) * 0.25) +
                   (fract(coord.t * (height / 2.0)) * 0.75)) *
                      2.0 -
@@ -45,7 +33,6 @@ vec2 rand(vec2 coord) // generating noise/pattern texture for dithering
                      2.0 -
                  1.0;
 
-  if (noise) {
     noiseX = clamp(fract(sin(dot(coord, vec2(12.9898, 78.233))) * 43758.5453),
                    0.0, 1.0) *
                  2.0 -
@@ -55,7 +42,7 @@ vec2 rand(vec2 coord) // generating noise/pattern texture for dithering
               0.0, 1.0) *
             2.0 -
         1.0;
-  }
+
   return vec2(noiseX, noiseY) * noiseamount;
 }
 
@@ -70,9 +57,8 @@ float readDepth(vec2 coord) {
 }
 
 int compareDepthsFar(float depth1, float depth2) {
-  float garea = 2.0;                      // gauss bell width
-  float diff = (depth1 - depth2) * 100.0; // depth difference (0-100)
-  // reduce left bell width to avoid self-shadowing
+  float garea = 2.0;
+  float diff = (depth1 - depth2) * 100.0;
   if (diff < gdisplace) {
     return 0;
   } else {
@@ -81,13 +67,11 @@ int compareDepthsFar(float depth1, float depth2) {
 }
 
 float compareDepths(float depth1, float depth2) {
-  float garea = 2.0;                      // gauss bell width
-  float diff = (depth1 - depth2) * 100.0; // depth difference (0-100)
-  // reduce left bell width to avoid self-shadowing
+  float garea = 2.0;
+  float diff = (depth1 - depth2) * 100.0;
   if (diff < gdisplace) {
     garea = diffarea;
   }
-
   float gauss = pow(2.7182, -2.0 * (diff - gdisplace) * (diff - gdisplace) /
                                 (garea * garea));
   return gauss;
@@ -109,12 +93,10 @@ float calAO(float depth, float dw, float dh) {
   float cd = readDepth(coord);
   int far = compareDepthsFar(depth, cd);
   temp = compareDepths(depth, cd);
-  // DEPTH EXTRAPOLATION:
   if (far > 0) {
     temp2 = compareDepths(readDepth(coord2), depth);
     temp += (1.0 - temp) * temp2;
   }
-
   return temp;
 }
 
@@ -168,8 +150,6 @@ void main(void) {
   vec3 lumcoeff = vec3(0.299, 0.587, 0.114);
   float lum = dot(color.rgb, lumcoeff);
   vec3 luminance = vec3(lum, lum, lum);
-  vec3 final = vec3(
-      color * mix(vec3(ao), vec3(1.0),
-                  luminance * lumInfluence)); // mix(color*ao, white, luminance)
+  vec3 final = vec3(color * mix(vec3(ao), vec3(1.0), luminance * lumInfluence));
   fragment_color = vec4(final, 1.0);
 }

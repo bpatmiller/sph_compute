@@ -24,15 +24,14 @@ void main() {
 
   // 1 - density
   if (color_mode == 1) {
-    v_color =
-        mix(vec3(0.1, 0.7, 0.3), vec3(0.2, 0.4, 0.65), density / 50000.0);
+    v_color = mix(vec3(0.1, 0.7, 0.3), vec3(0.2, 0.4, 0.65), density / 50000.0);
     // 2 - pressure
   } else if (color_mode == 2) {
     v_color = mix(vec3(0.6, 0.6, 0.5), vec3(0.8, 0.2, 0.65), 50 * pressure);
     // 3 - hash
   } else if (color_mode == 3) {
     v_color = mix(vec3(0.7, 0.7, 0.2), vec3(0.2, 0.2, 0.8),
-                  sin(hash)); // float(hash) / float(num_cells));
+                  float(hash) / float(num_cells));
     // 4 - acceleration
   } else if (color_mode == 4) {
     v_color = 0.005 * abs(acceleration);

@@ -34,7 +34,7 @@ uniform vec3 box_dimensions;
 uniform vec3 focus;
 uniform bool pipe;
 
-float EPS = h * 0.125f;
+float EPS = h * 0.025f;
 float damping = -0.25;
 uint hash(vec3 position) {
   vec3 p_hat = floor(position / h);
@@ -63,7 +63,8 @@ void main() {
   // check if put into inlet pipe
   vec3 p_pos = particles[i].position;
   if (pipe) {
-    if (p_pos.y < EPS && pow( p_pos.x- focus.x,2) + pow(p_pos.z - focus.z, 2) < 0.025) {
+    if (p_pos.y < EPS &&
+        pow(p_pos.x - focus.x, 2) + pow(p_pos.z - focus.z, 2) < 0.025) {
 
       float offset_y = p_pos.x - focus.x;
       float offset_z = p_pos.z - focus.z;
@@ -71,7 +72,7 @@ void main() {
       p.position.x = p_pos.y;
       p.position.y = 3.0 * focus.y + offset_y;
       p.position.z = focus.z + offset_z;
-      
+
       p.velocity.z *= 0.05;
       p.velocity.y *= 0.05;
       p.velocity.x += 3.0;
