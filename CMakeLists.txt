@@ -25,7 +25,7 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 find_package(PkgConfig REQUIRED)
 pkg_search_module(GLFW REQUIRED glfw3)
 include_directories(${GLFW_INCLUDE_DIRS})
-target_link_libraries(simulation ${GLFW_LIBRARIES})
+target_link_libraries(simulation ${GLFW_STATIC_LIBRARIES})
 
 # GLM
 FIND_PACKAGE(glm 0.9.8.0 QUIET)
