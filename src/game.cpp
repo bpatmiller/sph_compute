@@ -97,10 +97,10 @@ void Game::init() {
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
   // spatial acceleration SSBO
-  glGenBuffers(1, &accel_ssbo_id);
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, accel_ssbo_id);
-  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, simulation.accel_vao.vb.id);
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+  // glGenBuffers(1, &accel_ssbo_id);
+  // glBindBuffer(GL_SHADER_STORAGE_BUFFER, accel_ssbo_id);
+  // glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, simulation.accel_vao.vb.id);
+  // glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
   // init tex / tex quad for SSAO
   glfwGetWindowSize(window, &window_width, &window_height);
@@ -185,8 +185,8 @@ void Game::update() {
   // if (keyHeld[GLFW_KEY_P]) {
   for (uint iteration = 0; iteration < PHYSICS_STEPS; iteration++) {
     // sort particles and poulate a map of index -> index pairs
-    simulation.sort_particles();
-    fluid.ib.update(simulation.particles, 0);
+    // simulation.sort_particles();
+    // fluid.ib.update(simulation.particles, 0);
 
     // compute density and pressure
     fluid_compute_dens.use();
@@ -242,12 +242,12 @@ void Game::update() {
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
     // copy data back to cpu memory
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, fluid.ib.id);
-    Particle *read_data =
-        (Particle *)glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
-    uint n_p = simulation.particles.size();
-    std::copy(&read_data[0], &read_data[n_p], simulation.particles.begin());
-    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+    // glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, fluid.ib.id);
+    // Particle *read_data =
+    //     (Particle *)glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
+    // uint n_p = simulation.particles.size();
+    // std::copy(&read_data[0], &read_data[n_p], simulation.particles.begin());
+    // glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
   }
 
   // clear render, set params

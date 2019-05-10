@@ -18,8 +18,6 @@ struct Particle {
 
 layout(std430, binding = 0) buffer ParticleBlock { Particle particles[]; };
 
-layout(std430, binding = 1) buffer HashToIndexBlock { int HashToIndex[]; };
-
 const float PI = 3.1415927410125732421875f;
 
 uniform int particles_size;
@@ -94,7 +92,7 @@ void main() {
     }
   }
 
-  p._pad0 = HashToIndex[int(p.hash)];
-  p.hash = hash(p.position);
+  // p._pad0 = HashToIndex[int(p.hash)];
+  // p.hash = hash(p.position);
   particles[i] = p;
 }

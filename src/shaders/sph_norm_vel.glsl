@@ -1,6 +1,6 @@
 #version 430 core
 
-layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+layout(local_size_x = 16, local_size_y = 1, local_size_z = 1) in;
 
 // layout(std430)
 struct Particle {
@@ -46,24 +46,13 @@ void main() {
   Particle p = particles[i];
   vec3 normal = vec3(0);
 
-  for (int x = -1; x <= 1; x++) {
-    for (int y = -1; y <= 1; y++) {
-      for (int z = -1; z <= 1; z++) {
-        vec3 current_pos = p.position + vec3(x * h, y * h, z * h);
-        uint current_hash = hash(current_pos);
-        int start_index = HashToIndex[current_hash];
-        for (uint j = start_index; hash(particles[j].position) == current_hash;
-             j++) {
-          if (i == j)
-            continue;
-          float r = distance(p.position, particles[j].position);
-          if (r < h) {
-            normal +=
-                (MASS / particles[j].density) *
+  for (uint j = 0; j < particles_size; j++) {
+    if (i == j)
+      continue;
+    float r = distance(p.position, particles[j].position);
+    if (r < h) {
+      normal += (MASS / particles[j].density) *
                 poly6_grad(particles[i].position - particles[j].position, r);
-          }
-        }
-      }
     }
   }
 

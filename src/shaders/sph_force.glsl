@@ -18,7 +18,7 @@ struct Particle {
 
 layout(std430, binding = 0) buffer ParticleBlock { Particle particles[]; };
 
-layout(std430, binding = 1) buffer HashToIndexBlock { int HashToIndex[]; };
+// layout(std430, binding = 1) buffer HashToIndexBlock { int HashToIndex[]; };
 
 const float PI = 3.1415927410125732421875f;
 
@@ -64,38 +64,26 @@ void main() {
   Particle p = particles[i];
   vec3 force = MASS * vec3(0, -9.8, 0);
 
-  for (int x = -1; x <= 1; x++) {
-    for (int y = -1; y <= 1; y++) {
-      for (int z = -1; z <= 1; z++) {
-        vec3 current_pos = p.position + vec3(x * h, y * h, z * h);
-        int current_hash = hash(current_pos);
-        int start_index = HashToIndex[current_hash];
-        for (uint j = start_index; hash(particles[j].position) == current_hash;
-             j++) {
-          if (i == j)
-            continue;
-          float r = distance(p.position, particles[j].position);
-          if (r < h && 0 < r) {
-            // pressure
-            float pres_coef = p.density * MASS *
-                              (p.pressure + particles[j].pressure) /
-                              (2.0 * particles[j].density);
-            force +=
-                spiky_grad(p.position - particles[j].position, r) * pres_coef;
-            // viscosity
-            force +=
-                VISC * MASS *
-                ((particles[j].velocity - p.velocity) / particles[j].density) *
-                visc_lapl(p.position - particles[j].position);
-            // TODO surface tension
-            float k = 2.0f * REST_DENS / (p.density + particles[j].density);
-            vec3 cohesion = -SURF * MASS * surf_C(r) *
-                            normalize(p.position - particles[j].position);
-            vec3 curvature = -SURF * MASS * (p.normal - particles[j].normal);
-            force += k * (cohesion + curvature);
-          }
-        }
-      }
+  for (uint j = 0; j < particles_size; j++) {
+    if (i == j)
+      continue;
+    float r = distance(p.position, particles[j].position);
+    if (r < h && 0 < r) {
+      // pressure
+      float pres_coef = p.density * MASS *
+                        (p.pressure + particles[j].pressure) /
+                        (2.0 * particles[j].density);
+      force += spiky_grad(p.position - particles[j].position, r) * pres_coef;
+      // viscosity
+      force += VISC * MASS *
+               ((particles[j].velocity - p.velocity) / particles[j].density) *
+               visc_lapl(p.position - particles[j].position);
+      // TODO surface tension
+      float k = 2.0f * REST_DENS / (p.density + particles[j].density);
+      vec3 cohesion = -SURF * MASS * surf_C(r) *
+                      normalize(p.position - particles[j].position);
+      vec3 curvature = -SURF * MASS * (p.normal - particles[j].normal);
+      force += k * (cohesion + curvature);
     }
   }
 

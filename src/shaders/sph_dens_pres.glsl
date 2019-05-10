@@ -46,20 +46,10 @@ void main() {
   float dens = 0;
   Particle p = particles[i];
 
-  for (int x = -1; x <= 1; x++) {
-    for (int y = -1; y <= 1; y++) {
-      for (int z = -1; z <= 1; z++) {
-        vec3 current_pos = p.position + vec3(x * h, y * h, z * h);
-        int current_hash = hash(current_pos);
-        int start_index = HashToIndex[current_hash];
-        for (uint j = start_index; hash(particles[j].position) == current_hash;
-             j++) {
-          float r = distance(p.position, particles[j].position);
-          if (r < h) {
-            dens += MASS * poly6(r);
-          }
-        }
-      }
+  for (uint j = 0; j < particles_size; j++) {
+    float r = distance(p.position, particles[j].position);
+    if (r < h) {
+      dens += MASS * poly6(r);
     }
   }
 
