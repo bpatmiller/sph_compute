@@ -34,8 +34,8 @@ public:
   void toggle_render_mode() {
     std::cout << "toggle render mode" << std::endl;
     render_mode++;
-    if (render_mode > 1)
-      render_mode = 0;
+    if (render_mode > 3)
+      render_mode = 1;
   };
 
   // window ptr
@@ -93,4 +93,8 @@ public:
       {1.0f, 1.0f, 0.0f},
       {1.0f, -1.0f, 0.0f},
   };
+
+  // ssao kernel
+  uint ssao_kernel_size = 20;
+  std::vector<glm::vec3> ssao_kernel;
 };

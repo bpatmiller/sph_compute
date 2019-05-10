@@ -1,5 +1,6 @@
 #include "game.h"
 #include <algorithm>
+#include <glm/gtc/random.hpp>
 
 void Game::create_sphere(float Radius, std::vector<glm::vec3> &s_vertices) {
   int Stacks = 5;
@@ -26,8 +27,8 @@ void Game::create_sphere(float Radius, std::vector<glm::vec3> &s_vertices) {
 }
 
 void Game::init() {
-  simulation.dimensions = glm::vec3(20, 15, 5);
-  PHYSICS_STEPS = 15;
+  simulation.dimensions = glm::vec3(20, 15, 10);
+  PHYSICS_STEPS = 5;
   simulation.h = 0.1f;
   simulation.box_scale = 1.25f;
 
@@ -90,6 +91,18 @@ void Game::init() {
   // quad vao
   texquad.setLayout({3}, false);
   texquad.vb.set(tq_vertices);
+
+  // init ssao kernel
+  ssao_kernel.reserve(ssao_kernel_size);
+  for (uint i = 0; i < ssao_kernel_size; i++) {
+    // generate points on hemisphere
+    ssao_kernel[i] = glm::sphericalRand(1.0f);
+    ssao_kernel[i].z = glm::abs(ssao_kernel[i].z);
+    // scale within hemisphere
+    float scale = float(i) / float(ssao_kernel_size);
+    scale = glm::mix(0.1f, 1.0f, scale * scale);
+    ssao_kernel[i] *= scale;
+  }
 
   // some gl settings
   glClearColor(0.9f, 0.9f, 0.9f, 0.0f);
@@ -235,7 +248,7 @@ void Game::update() {
   // rerender on textured quad
   r_tex.bindTexture();
   tex_quad_program.use();
-  tex_quad_program.setVec2("frameBufSize",
+  tex_quad_program.setVec2("resolution",
                            glm::vec2(window_width, window_height));
   tex_quad_program.setInt("screenTex", 0);
   tex_quad_program.setInt("depTex", 1);
