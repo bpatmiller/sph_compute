@@ -30,11 +30,11 @@ public:
   }
 
   GLuint compile_shader(const char *shaderCode, GLint type,
-                        std::string type_string) {
+                        std::string type_string, std::string fname) {
     GLuint s = glCreateShader(type);
     glShaderSource(s, 1, &shaderCode, NULL);
     glCompileShader(s);
-    checkCompileErrors(s, type_string);
+    checkCompileErrors(s, type_string, fname);
     return s;
   }
 
@@ -49,21 +49,23 @@ public:
 
     GLuint vertex = 0, fragment = 0, geometry = 0, compute = 0;
 
+  
+
     if (vertCode != "") {
       const char *vShaderCode = vertCode.c_str();
-      vertex = compile_shader(vShaderCode, GL_VERTEX_SHADER, "VERTEX");
+      vertex = compile_shader(vShaderCode, GL_VERTEX_SHADER, "VERTEX", std::string(vertexPath) );
     }
     if (geomCode != "") {
       const char *gShaderCode = geomCode.c_str();
-      geometry = compile_shader(gShaderCode, GL_GEOMETRY_SHADER, "GEOMETRY");
+        geometry = compile_shader(gShaderCode, GL_GEOMETRY_SHADER, "GEOMETRY",  std::string(geometryPath));
     }
     if (fragCode != "") {
       const char *fShaderCode = fragCode.c_str();
-      fragment = compile_shader(fShaderCode, GL_FRAGMENT_SHADER, "FRAGMENT");
+      fragment = compile_shader(fShaderCode, GL_FRAGMENT_SHADER, "FRAGMENT",  std::string(fragmentPath));
     }
     if (compCode != "") {
       const char *cShaderCode = compCode.c_str();
-      compute = compile_shader(cShaderCode, GL_COMPUTE_SHADER, "COMPUTE");
+      compute = compile_shader(cShaderCode, GL_COMPUTE_SHADER, "COMPUTE",  std::string(computePath));
     }
 
     ID = glCreateProgram();
@@ -130,7 +132,7 @@ public:
 private:
   // utility function for checking shader compilation/linking errors.
   // ------------------------------------------------------------------------
-  void checkCompileErrors(unsigned int shader, std::string type) {
+  void checkCompileErrors(unsigned int shader, std::string type, std::string fname = "") {
     int success;
     char infoLog[1024];
     if (type != "PROGRAM") {
@@ -139,6 +141,7 @@ private:
         glGetShaderInfoLog(shader, 1024, NULL, infoLog);
         std::cout
             << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n"
+            << "FILENAME:: " << fname << std::endl
             << infoLog
             << "\n -- --------------------------------------------------- --"
             << std::endl;
