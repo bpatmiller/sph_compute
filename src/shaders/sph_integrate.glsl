@@ -31,6 +31,8 @@ uniform float REST_DENS;
 uniform float VISC;
 uniform float timestep;
 uniform vec3 box_dimensions;
+uniform vec3 focus;
+uniform bool pipe;
 
 float EPS = h * 0.125f;
 float damping = -0.25;
@@ -58,9 +60,25 @@ void main() {
   // p.position += timestep * p.velocity;
   // p.velocity += timestep * 0.5f * p.acceleration;
 
+  // check if put into inlet pipe
+  vec3 p_pos = particles[i].position;
+  if (pipe) {
+    if (p_pos.y < EPS && pow( p_pos.x- focus.x,2) + pow(p_pos.z - focus.z, 2) < 0.025) {
+
+      float offset_y = p_pos.x - focus.x;
+      float offset_z = p_pos.z - focus.z;
+
+      p.position.x = p_pos.y;
+      p.position.y = 3.0 * focus.y + offset_y;
+      p.position.z = focus.z + offset_z;
+      
+      p.velocity.z *= 0.05;
+      p.velocity.y *= 0.05;
+      p.velocity.x += 3.0;
+    }
+  }
   // check collisions - FIXME abstract this now, for now
   // keep in a 2x2x2 bounding box
-  vec3 p_pos = particles[i].position;
   for (uint var = 0; var < 3; var++) {
     if (p_pos[var] < 0) {
       p.position[var] = EPS;

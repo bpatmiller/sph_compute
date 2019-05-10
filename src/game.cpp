@@ -33,12 +33,12 @@ void Game::init() {
   render_mode = 2;
 
   // 2400 particles
-  simulation.dimensions = glm::vec3(20, 15, 8);
-  PHYSICS_STEPS = 10;
+  // simulation.dimensions = glm::vec3(20, 15, 8);
+  // PHYSICS_STEPS = 10;
 
   // 4800 particles
-  // simulation.dimensions = glm::vec3(40, 15, 8);
-  // PHYSICS_STEPS = 5;
+  simulation.dimensions = glm::vec3(40, 15, 8);
+  PHYSICS_STEPS = 5;
 
   // 6000 particles
   // simulation.dimensions = glm::vec3(30, 20, 10);
@@ -46,7 +46,7 @@ void Game::init() {
 
   // 10,000 particles
   // simulation.dimensions = glm::vec3(25, 20, 20);
-  // PHYSICS_STEPS = 5;
+  // PHYSICS_STEPS = 1;
 
   // set camera focus
   focus = simulation.dimensions * simulation.h * simulation.box_scale * 0.25f;
@@ -236,6 +236,8 @@ void Game::update() {
     fluid_integrate.setFloat("VISC", simulation.VISC);
     fluid_integrate.setFloat("timestep", simulation.timestep);
     fluid_integrate.setVec3("box_dimensions", simulation.box_dimensions);
+    fluid_integrate.setBool("pipe", pipe);
+    fluid_integrate.setVec3("focus", focus);
     glDispatchCompute(simulation.particles.size(), 1, 1);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
