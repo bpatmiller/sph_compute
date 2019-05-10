@@ -102,8 +102,7 @@ void main() {
   vec3 d = (p.position - repulser) * 0.2;
   float r = length(d);
   if (r < h && 0 < r) {
-    float rep_coef = num_cells * 0.0001 * p.density * MASS * (p.pressure * 2) /
-                     (2000.0 * REST_DENS);
+    float rep_coef = 0.25;
     force += spiky_grad(d, r) * rep_coef;
   }
 

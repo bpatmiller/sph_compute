@@ -3,8 +3,8 @@
 #include <glm/gtc/random.hpp>
 
 void Game::create_sphere(float Radius, std::vector<glm::vec3> &s_vertices) {
-  int Stacks = 5;
-  int Slices = 5;
+  int Stacks = 6;
+  int Slices = 6;
   s_vertices.clear();
 
   for (int i = 0; i <= Stacks; ++i) {
@@ -27,13 +27,23 @@ void Game::create_sphere(float Radius, std::vector<glm::vec3> &s_vertices) {
 }
 
 void Game::init() {
-  simulation.dimensions = glm::vec3(10, 15, 8);
+  // 2400 particles
+  simulation.dimensions = glm::vec3(20, 15, 8);
+  PHYSICS_STEPS = 10;
+  simulation.h = 0.1f;
+  simulation.box_scale = 2.0f;
+  render_mode = 2;
+
+  // 2400 particles
+  simulation.dimensions = glm::vec3(25, 20, 20);
   PHYSICS_STEPS = 5;
   simulation.h = 0.1f;
-  simulation.box_scale = 1.25f;
+  simulation.box_scale = 2.0f;
+  render_mode = 2;
 
-  focus = simulation.dimensions * simulation.h * simulation.box_scale * 0.5f;
-  focus.y *= 0.5f;
+  // set camera focus
+  focus = simulation.dimensions * simulation.h * simulation.box_scale * 0.25f;
+  focus.y *= 0.1f;
 
   // compile programs
   pool_program = Program("src/shaders/pool.vert", "src/shaders/pool.geom",
@@ -53,9 +63,9 @@ void Game::init() {
       {1.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 1.0f},
       {1.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}};
   for (auto &v : pool_vertices) {
-    v.x *= simulation.dimensions.x * simulation.h * simulation.box_scale;
-    v.y *= simulation.dimensions.y * simulation.h * simulation.box_scale;
-    v.z *= simulation.dimensions.z * simulation.h * simulation.box_scale;
+    v.x *= simulation.dimensions.x * simulation.h * simulation.box_scale * 0.5f;
+    v.y *= simulation.dimensions.y * simulation.h * simulation.box_scale * 0.5f;
+    v.z *= simulation.dimensions.z * simulation.h * simulation.box_scale * 0.5f;
   }
   pool_indices = {{0, 1, 2}, {1, 3, 2}, {0, 5, 1}, {0, 4, 5}, {2, 3, 7},
                   {2, 7, 6}, {3, 1, 5}, {3, 5, 7}, {0, 2, 6}, {0, 6, 4}};
@@ -67,7 +77,7 @@ void Game::init() {
 
   // init sphere, pass particle instances
   std::vector<glm::vec3> sphere_vertices;
-  create_sphere(simulation.h * 0.25f, sphere_vertices);
+  create_sphere(simulation.h * 0.5f, sphere_vertices);
   fluid.setLayout({3}, false);
   fluid.setLayout({3, 1, 3, 1, 3, 1, 3, 1, 3, 1}, true);
   fluid.vb.set(sphere_vertices);
@@ -106,6 +116,7 @@ void Game::init() {
 
   // some gl settings
   glClearColor(0.9f, 0.9f, 0.9f, 0.0f);
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
   glEnable(GL_BLEND);
@@ -139,7 +150,11 @@ void Game::update() {
     }
   } else {
     if (!first) {
-      mouse_ray_intersect();
+      if (keyHeld[GLFW_KEY_T]) {
+        mouse_ray_intersect();
+      } else {
+        repulser = glm::vec3(-99, -99, -99);
+      }
     }
   }
   mouse_pos_prev = mouse_pos;
@@ -285,7 +300,7 @@ bool Game::intersect_sphere(glm::vec3 ray_direction, glm::vec3 p) {
   // ray direction = ray direction
   // sphere position = p
   // sphere radius = h
-  float radius = simulation.h * 5;
+  float radius = simulation.h * 2;
   glm::vec3 oc = eye - p;
   float a = glm::dot(ray_direction, ray_direction);
   float b = 2.0f * glm::dot(oc, ray_direction);

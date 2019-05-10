@@ -91,7 +91,4 @@ int main(int argc, char *argv[]) {
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
-
-  glfwDestroyWindow(window);
-  glfwTerminate();
 }

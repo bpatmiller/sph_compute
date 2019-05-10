@@ -43,7 +43,7 @@ public:
   VAO accel_vao;
   //
   float h = 0.1;
-  float timestep = 0.001f;
+  float timestep = 0.0025f;
 
   float MASS = 28.0;
   float REST_DENSITY = 59.0;

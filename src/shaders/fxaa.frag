@@ -119,7 +119,7 @@ float calAO(float depth, float dw, float dh) {
 }
 
 void main(void) {
-  if (renderMode == 1) {
+  if (renderMode == 1 || texture2D(screenTex, uv).w != 1.0) {
     fragment_color = texture2D(screenTex, uv);
     return;
   }

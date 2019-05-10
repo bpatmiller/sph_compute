@@ -20,7 +20,6 @@ layout(std430, binding = 0) buffer ParticleBlock { Particle particles[]; };
 layout(std430, binding = 1) buffer HashToIndexBlock { int HashToIndex[]; };
 
 const float PI = 3.1415927410125732421875f;
-const float EPS = 0.0001;
 
 uniform int particles_size;
 uniform int num_cells;
@@ -33,6 +32,8 @@ uniform float VISC;
 uniform float timestep;
 uniform vec3 box_dimensions;
 
+float EPS = h * 0.125f;
+float damping = -0.25;
 uint hash(vec3 position) {
   vec3 p_hat = floor(position / h);
   return ((uint(p_hat.x) * 73856093) ^ (uint(p_hat.y) * 19349663) ^
@@ -59,11 +60,11 @@ void main() {
   for (uint var = 0; var < 3; var++) {
     if (p_pos[var] < 0) {
       p.position[var] = EPS;
-      p.velocity[var] *= -0.5;
+      p.velocity[var] *= damping;
 
     } else if (p_pos[var] > box_dimensions[var]) {
       p.position[var] = box_dimensions[var] - EPS;
-      p.velocity[var] *= -0.5;
+      p.velocity[var] *= damping;
     }
   }
 

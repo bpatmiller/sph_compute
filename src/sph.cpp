@@ -10,12 +10,12 @@ void SPH::init() {
 
   std::cout << "Intilizing SPH with " << num_cells << " particles" << std::endl;
 
-  box_dimensions = dimensions * h * box_scale;
+  box_dimensions = dimensions * h * box_scale * 0.5f;
 
   for (int x = 0; x < dimensions.x; x++) {
     for (int y = 0; y < dimensions.y; y++) {
       for (int z = 0; z < dimensions.z; z++) {
-        glm::vec3 offset = dimensions * h * 0.5f;
+        glm::vec3 offset = 0.25f * dimensions * h * (box_scale - 1);
         Particle p(offset + glm::vec3(0.25f * h + 0.5f * h * x,
                                       0.25f * h + 0.5f * h * y,
                                       0.25f * h + 0.5f * h * z));

@@ -32,11 +32,10 @@ void main() {
     // 3 - hash
   } else if (color_mode == 3) {
     v_color = mix(vec3(0.7, 0.7, 0.2), vec3(0.2, 0.2, 0.8),
-                  float(hash) / float(num_cells));
-    // 4 - hash - to - index
+                  sin(hash)); // float(hash) / float(num_cells));
+    // 4 - acceleration
   } else if (color_mode == 4) {
-    v_color = mix(vec3(0.1, 0.0, 0.3), vec3(0.2, 0.4, 0.65),
-                  float(pad0) / float(num_cells));
+    v_color = 0.005 * abs(acceleration);
   }
   // forces
   else if (color_mode == 5) {
@@ -52,11 +51,14 @@ void main() {
   }
   // velocity
   else if (color_mode == 8) {
-    v_color = abs(velocity);
+    v_color = vec3(0.25) + 0.7 * abs(velocity);
   }
   // SPEED
   else {
+    // v_color =
+    //     mix(vec3(0.6, 0.6, 0.6), vec3(0.8, 0.1, 0.1), length(velocity) *
+    //     0.25);
     v_color =
-        mix(vec3(0.6, 0.6, 0.6), vec3(0.8, 0.1, 0.1), length(velocity) * 0.2);
+        mix(vec3(0.2, 0.4, 0.65), vec3(0.1, 0.7, 0.3), length(velocity) * 0.25);
   }
 }
