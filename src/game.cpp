@@ -26,8 +26,8 @@ void Game::create_sphere(float Radius, std::vector<glm::vec3> &s_vertices) {
 }
 
 void Game::init() {
-  simulation.dimensions = glm::vec3(20, 25, 20);
-  PHYSICS_STEPS = 1;
+  simulation.dimensions = glm::vec3(20, 15, 5);
+  PHYSICS_STEPS = 15;
   simulation.h = 0.1f;
   simulation.box_scale = 1.25f;
 
@@ -43,6 +43,8 @@ void Game::init() {
   fluid_compute_force = Program("", "", "", "src/shaders/sph_force.glsl");
   fluid_integrate = Program("", "", "", "src/shaders/sph_integrate.glsl");
   fluid_compute_norm_vel = Program("", "", "", "src/shaders/sph_norm_vel.glsl");
+  tex_quad_program =
+      Program("src/shaders/fxaa.vert", "", "src/shaders/fxaa.frag", "");
 
   // init pool
   std::vector<glm::vec3> pool_vertices = {
@@ -85,9 +87,12 @@ void Game::init() {
   // init tex / tex quad for SSAO
   glfwGetWindowSize(window, &window_width, &window_height);
   r_tex.create(window_width, window_height);
+  // quad vao
+  texquad.setLayout({3}, false);
+  texquad.vb.set(tq_vertices);
 
   // some gl settings
-  glClearColor(0.8f, 0.8f, 0.8f, 0.0f);
+  glClearColor(0.9f, 0.9f, 0.9f, 0.0f);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
   glEnable(GL_BLEND);
@@ -133,10 +138,6 @@ void Game::update() {
   if (keyHeld[GLFW_KEY_S]) {
     base_eye.z += 0.1f;
   }
-
-  // clear render, set params
-  glViewport(0, 0, window_width, window_height);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   // if (keyHeld[GLFW_KEY_P]) {
   for (uint iteration = 0; iteration < PHYSICS_STEPS; iteration++) {
@@ -204,6 +205,11 @@ void Game::update() {
     glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
   }
 
+  // clear render, set params
+  glViewport(0, 0, window_width, window_height);
+  r_tex.bind();
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
   // render the pool
   pool_program.use();
   pool_program.setMat4("projection", projection_matrix);
@@ -218,14 +224,25 @@ void Game::update() {
   fluid_program.setMat4("view", view_matrix);
   fluid_program.setInt("color_mode", color_mode);
   fluid_program.setInt("num_cells", simulation.num_cells);
-  // fluid_program.setVec3("repulser", repulser);
   fluid.bind();
   glDrawElementsInstanced(GL_TRIANGLES, sphere_indices.size() * 3,
                           GL_UNSIGNED_INT, sphere_indices.data(),
                           simulation.particles.size());
 
+  r_tex.unbind();
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
   // rerender on textured quad
-  // tex_quad_program.use();
+  r_tex.bindTexture();
+  tex_quad_program.use();
+  tex_quad_program.setVec2("frameBufSize",
+                           glm::vec2(window_width, window_height));
+  tex_quad_program.setInt("screenTex", 0);
+  tex_quad_program.setInt("depTex", 1);
+  tex_quad_program.setInt("renderMode", render_mode);
+  texquad.bind();
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  r_tex.unbindTexture();
 }
 
 void Game::update_camera() {

@@ -18,6 +18,10 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action,
     glfwSetWindowShouldClose(window, GLFW_TRUE);
     return;
   }
+  // toggle render mode
+  if (key == GLFW_KEY_R && action == GLFW_RELEASE) {
+    game->toggle_render_mode();
+  }
   // color modes
   if (key == GLFW_KEY_1) {
     game->color_mode = 1;

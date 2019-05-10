@@ -31,6 +31,12 @@ public:
   bool intersect_sphere(glm::vec3 ray_direction, glm::vec3 p);
   void mouse_ray_intersect();
   float intersect_plane(glm::vec3 ray_direction);
+  void toggle_render_mode() {
+    std::cout << "toggle render mode" << std::endl;
+    render_mode++;
+    if (render_mode > 1)
+      render_mode = 0;
+  };
 
   // window ptr
   GLFWwindow *window;
@@ -54,6 +60,7 @@ public:
   glm::mat4 projection_matrix;
 
   int color_mode = 6;
+  int render_mode = 1;
   glm::vec3 repulser = glm::vec3(-99, -99, -99);
 
   // fluid programs/ssbo/indices/SPH object
