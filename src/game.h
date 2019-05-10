@@ -67,6 +67,7 @@ public:
 
   // fluid programs/ssbo/indices/SPH object
   Program fluid_program;
+  Program fluid_hash;
   Program fluid_compute_dens;
   Program fluid_compute_norm_vel;
   Program fluid_compute_force;

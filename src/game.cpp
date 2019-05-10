@@ -33,16 +33,16 @@ void Game::init() {
   render_mode = 2;
 
   // 2400 particles
-  // simulation.dimensions = glm::vec3(20, 15, 8);
-  // PHYSICS_STEPS = 10;
+  simulation.dimensions = glm::vec3(10, 15, 6);
+  PHYSICS_STEPS = 10;
 
   // 4800 particles
   // simulation.dimensions = glm::vec3(40, 15, 8);
   // PHYSICS_STEPS = 5;
 
   // 6000 particles
-  simulation.dimensions = glm::vec3(30, 20, 10);
-  PHYSICS_STEPS = 2;
+  // simulation.dimensions = glm::vec3(30, 20, 10);
+  // PHYSICS_STEPS = 2;
 
   // 10,000 particles
   // simulation.dimensions = glm::vec3(25, 20, 20);
@@ -56,6 +56,7 @@ void Game::init() {
   pool_program = Program("src/shaders/pool.vs", "", "src/shaders/pool.fs", "");
   fluid_program =
       Program("src/shaders/particle.vs", "", "src/shaders/particle.fs", "");
+  fluid_hash = Program("", "", "", "src/shaders/sph_hash.glsl");
   fluid_compute_dens = Program("", "", "", "src/shaders/sph_dens_pres.glsl");
   fluid_compute_force = Program("", "", "", "src/shaders/sph_force.glsl");
   fluid_integrate = Program("", "", "", "src/shaders/sph_integrate.glsl");
@@ -97,10 +98,10 @@ void Game::init() {
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
   // spatial acceleration SSBO
-  // glGenBuffers(1, &accel_ssbo_id);
-  // glBindBuffer(GL_SHADER_STORAGE_BUFFER, accel_ssbo_id);
-  // glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, simulation.accel_vao.vb.id);
-  // glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+  glGenBuffers(1, &accel_ssbo_id);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, accel_ssbo_id);
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, simulation.accel_vao.vb.id);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
   // init tex / tex quad for SSAO
   glfwGetWindowSize(window, &window_width, &window_height);
@@ -184,9 +185,13 @@ void Game::update() {
 
   // if (keyHeld[GLFW_KEY_P]) {
   for (uint iteration = 0; iteration < PHYSICS_STEPS; iteration++) {
-    // sort particles and poulate a map of index -> index pairs
-    // simulation.sort_particles();
-    // fluid.ib.update(simulation.particles, 0);
+    // put particles in bin based on hash
+    //   accel_obj.reserve(num_cells * particles.size() / 8);
+    fluid_hash.use();
+    fluid_hash.setInt("particles_size", simulation.particles.size());
+    fluid_hash.setInt("num_cells", simulation.num_cells);
+    fluid_hash.setFloat("h", simulation.h);
+    glDispatchCompute(1, 1, 1);
 
     // compute density and pressure
     fluid_compute_dens.use();

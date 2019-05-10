@@ -1,6 +1,6 @@
 #version 430 core
 
-layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+layout(local_size_x = 250, local_size_y = 1, local_size_z = 1) in;
 
 struct Particle {
   vec3 position;
@@ -17,39 +17,30 @@ struct Particle {
 
 layout(std430, binding = 0) buffer ParticleBlock { Particle particles[]; };
 
+layout(std430, binding = 1) buffer AccelerationBlock {
+  uint hash_to_particles[];
+};
+
 const float PI = 3.1415927410125732421875f;
 
 uniform int particles_size;
 uniform int num_cells;
-uniform float time;
 uniform float h;
-uniform float MASS;
-uniform float GAS_CONST;
-uniform float REST_DENS;
 
-float poly6(float r) {
-  return 315.0f * pow(h * h - r * r, 3.0f) / (64.0f * PI * pow(h, 9.0f));
-}
-
-int hash(vec3 position) {
+uint hash(vec3 position) {
   vec3 p_hat = floor(position / h);
   return ((int(p_hat.x) * 73856093) ^ (int(p_hat.y) * 19349663) ^
           (int(p_hat.z) * 83492791)) %
          num_cells;
 }
 
+uint hash_to_particle_index(uint i) { return i * (particles_size / 8); }
+
 void main() {
-  uint i = gl_WorkGroupID.x;
-  float dens = 0;
-  Particle p = particles[i];
+  uint i = gl_LocalInvocationID.x;
+  uint loops = particles_size / 250;
 
-  for (uint j = 0; j < particles_size; j++) {
-    float r = distance(p.position, particles[j].position);
-    if (r < h) {
-      dens += MASS * poly6(r);
-    }
+  for (uint j = 0; j < 250; j++) {
+    particles[i * loops + j].hash = hash(particles[i * loops + j].position);
   }
-
-  particles[i].density = dens;
-  particles[i].pressure = GAS_CONST * (dens - REST_DENS);
 }

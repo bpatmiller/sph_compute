@@ -1,8 +1,7 @@
 #version 430 core
 
-layout(local_size_x = 16, local_size_y = 1, local_size_z = 1) in;
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
-// layout(std430)
 struct Particle {
   vec3 position;
   float density; // 4
@@ -17,8 +16,6 @@ struct Particle {
 };
 
 layout(std430, binding = 0) buffer ParticleBlock { Particle particles[]; };
-
-layout(std430, binding = 1) buffer HashToIndexBlock { int HashToIndex[]; };
 
 const float PI = 3.1415927410125732421875f;
 

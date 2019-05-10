@@ -24,7 +24,6 @@ public:
   SPH() { dimensions = glm::vec3(0); };
   SPH(int x, int y, int z) { dimensions = glm::vec3(x, y, z); }
   void init();
-  void sort_particles();
   uint hash_particle(glm::vec3 _p, float _h, int _n);
 
   // simulation parameters
@@ -34,7 +33,7 @@ public:
   int num_cells;
   // particle vector
   std::vector<Particle> particles;
-  std::vector<int> hash_to_index_of_first;
+  std::vector<uint> accel_obj;
   VAO accel_vao;
   // simulation constants
   float h = 0.1;
