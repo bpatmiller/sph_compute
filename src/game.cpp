@@ -35,11 +35,11 @@ void Game::init() {
   render_mode = 2;
 
   // 2400 particles
-  simulation.dimensions = glm::vec3(25, 20, 20);
-  PHYSICS_STEPS = 5;
-  simulation.h = 0.1f;
-  simulation.box_scale = 2.0f;
-  render_mode = 2;
+  // simulation.dimensions = glm::vec3(25, 20, 20);
+  // PHYSICS_STEPS = 5;
+  // simulation.h = 0.1f;
+  // simulation.box_scale = 2.0f;
+  // render_mode = 2;
 
   // set camera focus
   focus = simulation.dimensions * simulation.h * simulation.box_scale * 0.25f;
@@ -151,6 +151,10 @@ void Game::update() {
   } else {
     if (!first) {
       if (keyHeld[GLFW_KEY_T]) {
+        attract_repel = 1.0f;
+        mouse_ray_intersect();
+      } else if (keyHeld[GLFW_KEY_Y]) {
+        attract_repel = -1.0f;
         mouse_ray_intersect();
       } else {
         repulser = glm::vec3(-99, -99, -99);
@@ -206,7 +210,7 @@ void Game::update() {
     fluid_compute_force.setFloat("VISC", simulation.VISC);
     fluid_compute_force.setFloat("SURF", simulation.SURF);
     fluid_compute_force.setVec3("repulser", repulser);
-    fluid_compute_force.setBool("repulser_on", keyHeld[GLFW_KEY_R]);
+    fluid_compute_force.setFloat("attract_repel", attract_repel);
     glDispatchCompute(simulation.particles.size(), 1, 1);
 
     // integrate

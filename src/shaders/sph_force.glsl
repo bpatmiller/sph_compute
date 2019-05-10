@@ -31,7 +31,7 @@ uniform float REST_DENS;
 uniform float VISC;
 uniform float SURF;
 uniform vec3 repulser;
-uniform bool repulser_on;
+uniform float attract_repel;
 
 vec3 spiky_grad(vec3 r, float l) {
   return normalize(r) * pow(h - length(r), 2.0) * (45.0 / (PI * pow(h, 6)));
@@ -99,13 +99,15 @@ void main() {
   }
 
   // handle mouse controlled repulser
-  vec3 d = (p.position - repulser) * 0.2;
-  float r = length(d);
-  if (r < h && 0 < r) {
-    float rep_coef = 0.25;
-    force += spiky_grad(d, r) * rep_coef;
+  // ignore if repulser is off in the distance
+  if (repulser.x != -99) {
+    vec3 d = (p.position - repulser) * 0.1;
+    float r = length(d);
+    if (r < h && 0 < r) {
+      float rep_coef = 0.0125;
+      force += spiky_grad(attract_repel * d, r) * rep_coef;
+    }
   }
 
-  clamp(force, -5.0, 5.0);
   particles[i].force = force;
 }
