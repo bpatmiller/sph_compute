@@ -45,14 +45,18 @@ void main() {
   uint i = gl_WorkGroupID.x;
   Particle p = particles[i];
 
+  // integrate with verlet(?)
   vec3 new_accel = p.force / MASS;
-  // get new velocity
   p.velocity += timestep * ((new_accel + p.acceleration) * 0.5f);
-  // get new position
   p.position +=
       (timestep * p.velocity) + (p.acceleration * timestep * timestep * 0.5f);
-  // update accel
   p.acceleration = new_accel;
+
+  // potentially use leapfrog
+  //  p.acceleration = p.force / MASS;
+  // p.velocity += timestep * 0.5f * p.acceleration;
+  // p.position += timestep * p.velocity;
+  // p.velocity += timestep * 0.5f * p.acceleration;
 
   // check collisions - FIXME abstract this now, for now
   // keep in a 2x2x2 bounding box

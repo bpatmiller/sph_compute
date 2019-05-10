@@ -36,6 +36,10 @@ void Game::init() {
   simulation.dimensions = glm::vec3(20, 15, 8);
   PHYSICS_STEPS = 10;
 
+  // 4800 particles
+  // simulation.dimensions = glm::vec3(40, 15, 8);
+  // PHYSICS_STEPS = 5;
+
   // 6000 particles
   // simulation.dimensions = glm::vec3(30, 20, 10);
   // PHYSICS_STEPS = 10;
@@ -46,11 +50,10 @@ void Game::init() {
 
   // set camera focus
   focus = simulation.dimensions * simulation.h * simulation.box_scale * 0.25f;
-  focus.y *= 0.2f;
+  focus.y *= 0.5f;
 
   // compile programs
-  pool_program = Program("src/shaders/pool.vs", "",
-                         "src/shaders/pool.fs", "");
+  pool_program = Program("src/shaders/pool.vs", "", "src/shaders/pool.fs", "");
   fluid_program =
       Program("src/shaders/particle.vs", "", "src/shaders/particle.fs", "");
   fluid_compute_dens = Program("", "", "", "src/shaders/sph_dens_pres.glsl");
@@ -70,8 +73,9 @@ void Game::init() {
     v.y *= simulation.dimensions.y * simulation.h * simulation.box_scale * 0.5f;
     v.z *= simulation.dimensions.z * simulation.h * simulation.box_scale * 0.5f;
   }
-  pool_indices = {{0, 1, 2}, {1, 3, 2}, {4, 6, 5}, {5, 6, 7}, {0, 5, 1}, {0, 4, 5}, {2, 3, 7},
-                  {2, 7, 6}, {3, 1, 5}, {3, 5, 7}, {0, 2, 6}, {0, 6, 4}};
+  pool_indices = {{0, 1, 2}, {1, 3, 2}, {4, 6, 5}, {5, 6, 7},
+                  {0, 5, 1}, {0, 4, 5}, {2, 3, 7}, {2, 7, 6},
+                  {3, 1, 5}, {3, 5, 7}, {0, 2, 6}, {0, 6, 4}};
   pool.setLayout({3}, false);
   pool.vb.set(pool_vertices);
 
@@ -106,16 +110,18 @@ void Game::init() {
   texquad.vb.set(tq_vertices);
 
   // init ssao kernel
-  ssao_kernel.reserve(ssao_kernel_size);
-  for (uint i = 0; i < ssao_kernel_size; i++) {
-    // generate points on hemisphere
-    ssao_kernel[i] = glm::sphericalRand(1.0f);
-    ssao_kernel[i].z = glm::abs(ssao_kernel[i].z);
-    // scale within hemisphere
-    float scale = float(i) / float(ssao_kernel_size);
-    scale = glm::mix(0.1f, 1.0f, scale * scale);
-    ssao_kernel[i] *= scale;
-  }
+  // FIXME remove this
+  // from old implimentation
+  // ssao_kernel.reserve(ssao_kernel_size);
+  // for (uint i = 0; i < ssao_kernel_size; i++) {
+  //   // generate points on hemisphere
+  //   ssao_kernel[i] = glm::sphericalRand(1.0f);
+  //   ssao_kernel[i].z = glm::abs(ssao_kernel[i].z);
+  //   // scale within hemisphere
+  //   float scale = float(i) / float(ssao_kernel_size);
+  //   scale = glm::mix(0.1f, 1.0f, scale * scale);
+  //   ssao_kernel[i] *= scale;
+  // }
 
   // some gl settings
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -125,7 +131,7 @@ void Game::init() {
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glDepthFunc(GL_LESS);
   glCullFace(GL_BACK);
-  glLineWidth(5.0f);
+  glLineWidth(2.0f);
 }
 
 void Game::update() {
