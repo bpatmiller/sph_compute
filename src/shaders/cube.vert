@@ -40,14 +40,23 @@ void main() {
   }
   // forces
   else if (color_mode == 5) {
-    v_color = force * 0.0001;
+    v_color = normalize(abs(force)); // clamp(abs(force) * 0.00001, 0, 1);
   }
   // starting x position
   else if (color_mode == 6) {
     v_color = mix(vec3(0.1, 0.7, 0.3), vec3(0.2, 0.4, 0.65), pad1);
   }
   // normals
-  else {
+  else if (color_mode == 7) {
     v_color = normalize(abs(normal));
+  }
+  // velocity
+  else if (color_mode == 8) {
+    v_color = abs(velocity);
+  }
+  // SPEED
+  else {
+    v_color =
+        mix(vec3(0.6, 0.6, 0.6), vec3(0.8, 0.1, 0.1), length(velocity) * 0.2);
   }
 }

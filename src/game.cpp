@@ -26,7 +26,8 @@ void Game::create_sphere(float Radius, std::vector<glm::vec3> &s_vertices) {
 }
 
 void Game::init() {
-  simulation.dimensions = glm::vec3(20, 30, 8);
+  simulation.dimensions = glm::vec3(20, 25, 20);
+  PHYSICS_STEPS = 1;
   simulation.h = 0.1f;
   simulation.box_scale = 1.25f;
 
@@ -80,29 +81,36 @@ void Game::init() {
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, accel_ssbo_id);
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, simulation.accel_vao.vb.id);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-}
 
-void Game::update() {
-  // check window size
+  // init tex / tex quad for SSAO
   glfwGetWindowSize(window, &window_width, &window_height);
+  r_tex.create(window_width, window_height);
 
-  // pass camera uniforms
-  view_matrix = glm::translate(glm::mat4(1.0f), -eye) *
-                glm::mat4_cast(orientation) *
-                glm::translate(glm::mat4(1.0f), -focus);
-  projection_matrix = glm::perspective(
-      glm::radians(60.0f), ((float)window_width) / window_height, 0.01f, 20.f);
-
-  // clear render, set params
-  glViewport(0, 0, window_width, window_height);
+  // some gl settings
   glClearColor(0.8f, 0.8f, 0.8f, 0.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glDepthFunc(GL_LESS);
   glCullFace(GL_BACK);
+}
+
+void Game::update() {
+  // check for resize
+  int old_w_w = window_width;
+  int old_w_h = window_height;
+  glfwGetWindowSize(window, &window_width, &window_height);
+  if (old_w_w != window_width || old_w_h != window_height) {
+    r_tex.changeSize(window_width, window_height);
+  }
+
+  // update camera pos
+  eye =
+      focus + glm::vec3(glm::mat4_cast(orientation) * glm::vec4(base_eye, 1.0));
+  view_matrix = glm::lookAt(eye, focus, UP);
+  projection_matrix = glm::perspective(
+      glm::radians(60.0f), ((float)window_width) / window_height, 0.01f, 20.f);
 
   // handle mouse movement
   bool first = (mouse_pos_prev == glm::vec2(-1, -1));
@@ -113,31 +121,25 @@ void Game::update() {
     }
   } else {
     if (!first) {
-      if (mouse_pos != mouse_pos_prev) {
-        mouse_ray_intersect();
-      }
+      mouse_ray_intersect();
     }
   }
   mouse_pos_prev = mouse_pos;
 
   // handle keypress
   if (keyHeld[GLFW_KEY_W]) {
-    eye -= 0.05f * glm::normalize(eye); // - focus);
+    base_eye.z -= 0.1f;
   }
   if (keyHeld[GLFW_KEY_S]) {
-    eye += 0.05f * glm::normalize(eye); // - focus);
+    base_eye.z += 0.1f;
   }
 
-  // render the pool
-  pool_program.use();
-  pool_program.setMat4("projection", projection_matrix);
-  pool_program.setMat4("view", view_matrix);
-  pool.bind();
-  glDrawElements(GL_TRIANGLES, pool_indices.size() * 3, GL_UNSIGNED_INT,
-                 pool_indices.data());
+  // clear render, set params
+  glViewport(0, 0, window_width, window_height);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   // if (keyHeld[GLFW_KEY_P]) {
-  for (uint iteration = 0; iteration < 5; iteration++) {
+  for (uint iteration = 0; iteration < PHYSICS_STEPS; iteration++) {
     // sort particles and poulate a map of index -> index pairs
     simulation.sort_particles();
     fluid.ib.update(simulation.particles, 0);
@@ -202,6 +204,14 @@ void Game::update() {
     glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
   }
 
+  // render the pool
+  pool_program.use();
+  pool_program.setMat4("projection", projection_matrix);
+  pool_program.setMat4("view", view_matrix);
+  pool.bind();
+  glDrawElements(GL_TRIANGLES, pool_indices.size() * 3, GL_UNSIGNED_INT,
+                 pool_indices.data());
+
   // render the fluids
   fluid_program.use();
   fluid_program.setMat4("projection", projection_matrix);
@@ -213,20 +223,22 @@ void Game::update() {
   glDrawElementsInstanced(GL_TRIANGLES, sphere_indices.size() * 3,
                           GL_UNSIGNED_INT, sphere_indices.data(),
                           simulation.particles.size());
+
+  // rerender on textured quad
+  // tex_quad_program.use();
 }
 
 void Game::update_camera() {
   if (glm::length(mouse_diff) == 0)
     return;
-  mouse_diff *= 0.1f;
-  glm::quat qyaw = glm::angleAxis(glm::radians(mouse_diff.y), SIDE);
-  glm::quat qpitch = glm::angleAxis(glm::radians(mouse_diff.x), UP);
-  orientation = qyaw * orientation * qpitch;
-  // FIXME update correct camera pos
-  camera = view_matrix * glm::vec4(-eye, 0.0f);
-  camera.z *= -1.0f;
-  camera += glm::vec4(focus, 0.0);
-  // std::cout << "camera: " << glm::to_string(camera) << std::endl;
+  mouse_diff *= -0.001f;
+
+  pitch = std::max(-1.5f, std::min(1.5f, pitch + mouse_diff.y));
+  yaw += mouse_diff.x;
+
+  glm::quat qyaw = glm::angleAxis(yaw, UP);
+  glm::quat qpitch = glm::angleAxis(pitch, SIDE);
+  orientation = qyaw * qpitch;
 }
 
 glm::vec3 Game::screenspace_to_world(glm::vec2 coords, glm::vec4 viewport) {
@@ -243,8 +255,8 @@ bool Game::intersect_sphere(glm::vec3 ray_direction, glm::vec3 p) {
   // ray direction = ray direction
   // sphere position = p
   // sphere radius = h
-  float radius = simulation.h * 2;
-  glm::vec3 oc = glm::vec3(camera) - p;
+  float radius = simulation.h * 5;
+  glm::vec3 oc = eye - p;
   float a = glm::dot(ray_direction, ray_direction);
   float b = 2.0f * glm::dot(oc, ray_direction);
   float c = glm::dot(oc, oc) - radius * radius;
@@ -255,13 +267,19 @@ bool Game::intersect_sphere(glm::vec3 ray_direction, glm::vec3 p) {
   return true;
 }
 
+float Game::intersect_plane(glm::vec3 ray_direction) { return 0.0f; }
+
 void Game::mouse_ray_intersect() {
   glm::uvec4 viewport = glm::uvec4(0, 0, window_width, window_height);
   glm::vec2 mp = glm::vec2(mouse_pos.x, window_height - mouse_pos.y);
   glm::vec4 ray_direction =
       glm::vec4(glm::normalize(screenspace_to_world(mp, viewport)), 0.0f);
 
-  for (uint i = 0; i < simulation.particles.size(); i += 5) {
+  // ray - particle intersection
+  // phasing out in favor of more
+  // efficient design
+  // repulser = glm::vec3(-99, -99, -99);
+  for (uint i = 0; i < simulation.particles.size(); i++) {
     // check if ray intersects particle
     Particle &p = simulation.particles[i];
     if (intersect_sphere(glm::vec3(ray_direction), p.position)) {
@@ -269,4 +287,7 @@ void Game::mouse_ray_intersect() {
       break;
     }
   }
+
+  // ray ground intersection
+  // FIXME add support
 }

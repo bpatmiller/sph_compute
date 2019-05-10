@@ -103,7 +103,7 @@ void main() {
   float r = length(d);
   if (r < h && 0 < r) {
     float rep_coef =
-        p.density * MASS * (p.pressure * 2) / (2.0 * 1000.0 * REST_DENS);
+        p.density * MASS * (p.pressure * 2) / (2.0 * 2000.0 * REST_DENS);
     force += spiky_grad(d, r) * rep_coef;
   }
 

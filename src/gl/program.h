@@ -2,9 +2,9 @@
 
 #include <glad/glad.h>
 
-#include <glm/glm.hpp>
 #include <GLFW/glfw3.h>
 #include <fstream>
+#include <glm/glm.hpp>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -38,12 +38,10 @@ public:
     return s;
   }
 
-  Program() {
-    
-  }
+  Program() {}
 
   Program(const char *vertexPath, const char *geometryPath,
-         const char *fragmentPath, const char *computePath) {
+          const char *fragmentPath, const char *computePath) {
     std::string vertCode = readShader(vertexPath);
     std::string geomCode = readShader(geometryPath);
     std::string fragCode = readShader(fragmentPath);

@@ -18,20 +18,21 @@ struct VBO {
   static void unbind() { glBindBuffer(GL_ARRAY_BUFFER, 0); }
 
   template <typename T>
-  VBO& set(const std::vector<T> &vertices, GLenum usage = GL_STATIC_DRAW) {
+  VBO &set(const std::vector<T> &vertices, GLenum usage = GL_STATIC_DRAW) {
     bind();
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(T),
-                 vertices.data(), usage);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(T), vertices.data(),
+                 usage);
     unbind();
     return *this;
   }
 
   template <typename T>
-  VBO& update(const std::vector<T> &vertices , size_t index) {
-        bind();
-        glBufferSubData(GL_ARRAY_BUFFER, index, vertices.size() * sizeof(T), vertices.data());
-        unbind();
-        return *this;
+  VBO &update(const std::vector<T> &vertices, size_t index) {
+    bind();
+    glBufferSubData(GL_ARRAY_BUFFER, index, vertices.size() * sizeof(T),
+                    vertices.data());
+    unbind();
+    return *this;
   }
 };
 
@@ -50,7 +51,7 @@ struct VAO {
   static void unbind() { glBindVertexArray(0); }
 
   void setLayout(std::initializer_list<uint> sizes, bool instanced) {
-    
+
     bind();
     if (instanced) {
       ib.bind();

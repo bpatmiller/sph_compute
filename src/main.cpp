@@ -21,24 +21,22 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action,
   // color modes
   if (key == GLFW_KEY_1) {
     game->color_mode = 1;
-  }
-  if (key == GLFW_KEY_2) {
+  } else if (key == GLFW_KEY_2) {
     game->color_mode = 2;
-  }
-  if (key == GLFW_KEY_3) {
+  } else if (key == GLFW_KEY_3) {
     game->color_mode = 3;
-  }
-  if (key == GLFW_KEY_4) {
+  } else if (key == GLFW_KEY_4) {
     game->color_mode = 4;
-  }
-  if (key == GLFW_KEY_5) {
+  } else if (key == GLFW_KEY_5) {
     game->color_mode = 5;
-  }
-  if (key == GLFW_KEY_6) {
+  } else if (key == GLFW_KEY_6) {
     game->color_mode = 6;
-  }
-  if (key == GLFW_KEY_7) {
+  } else if (key == GLFW_KEY_7) {
     game->color_mode = 7;
+  } else if (key == GLFW_KEY_8) {
+    game->color_mode = 8;
+  } else if (key == GLFW_KEY_9) {
+    game->color_mode = 9;
   }
   // movement
   if (action == GLFW_PRESS) {
