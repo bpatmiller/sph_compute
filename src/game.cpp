@@ -27,7 +27,7 @@ void Game::create_sphere(float Radius, std::vector<glm::vec3> &s_vertices) {
 }
 
 void Game::init() {
-  simulation.dimensions = glm::vec3(20, 15, 10);
+  simulation.dimensions = glm::vec3(10, 15, 8);
   PHYSICS_STEPS = 5;
   simulation.h = 0.1f;
   simulation.box_scale = 1.25f;

@@ -120,7 +120,7 @@ float calAO(float depth, float dw, float dh) {
 
 void main(void) {
   if (renderMode == 1) {
-    gl_FragColor = texture2D(screenTex, uv);
+    fragment_color = texture2D(screenTex, uv);
     return;
   }
 
@@ -158,6 +158,18 @@ void main(void) {
   ao *= strength;
   ao = 1.0 - ao;
 
-  vec3 final = vec3(depth);
-  gl_FragColor = vec4(1.0 - final, 1.0);
+  // occlusion only
+  if (renderMode == 3) {
+    fragment_color = vec4(vec3(ao, ao, ao), 1.0);
+    return;
+  }
+
+  vec3 color = texture2D(screenTex, uv).rgb;
+  vec3 lumcoeff = vec3(0.299, 0.587, 0.114);
+  float lum = dot(color.rgb, lumcoeff);
+  vec3 luminance = vec3(lum, lum, lum);
+  vec3 final = vec3(
+      color * mix(vec3(ao), vec3(1.0),
+                  luminance * lumInfluence)); // mix(color*ao, white, luminance)
+  fragment_color = vec4(final, 1.0);
 }
