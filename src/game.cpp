@@ -33,16 +33,16 @@ void Game::init() {
   render_mode = 2;
 
   // 2400 particles
-  simulation.dimensions = glm::vec3(20, 15, 8);
-  PHYSICS_STEPS = 10;
+  // simulation.dimensions = glm::vec3(20, 15, 8);
+  // PHYSICS_STEPS = 10;
 
   // 4800 particles
   // simulation.dimensions = glm::vec3(40, 15, 8);
   // PHYSICS_STEPS = 5;
 
   // 6000 particles
-  // simulation.dimensions = glm::vec3(30, 20, 10);
-  // PHYSICS_STEPS = 10;
+  simulation.dimensions = glm::vec3(30, 20, 10);
+  PHYSICS_STEPS = 2;
 
   // 10,000 particles
   // simulation.dimensions = glm::vec3(25, 20, 20);

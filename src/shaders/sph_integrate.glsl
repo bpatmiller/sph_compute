@@ -35,7 +35,7 @@ uniform vec3 focus;
 uniform bool pipe;
 
 float EPS = h * 0.025f;
-float damping = -0.25;
+float damping = 0.5;
 uint hash(vec3 position) {
   vec3 p_hat = floor(position / h);
   return ((uint(p_hat.x) * 73856093) ^ (uint(p_hat.y) * 19349663) ^
@@ -83,11 +83,13 @@ void main() {
   for (uint var = 0; var < 3; var++) {
     if (p_pos[var] < 0) {
       p.position[var] = EPS;
-      p.velocity[var] *= damping;
+      p.velocity *= damping;
+      p.velocity[var] *= -1.0;
 
     } else if (p_pos[var] > box_dimensions[var]) {
       p.position[var] = box_dimensions[var] - EPS;
-      p.velocity[var] *= damping;
+      p.velocity *= damping;
+      p.velocity[var] *= -1.0;
     }
   }
 

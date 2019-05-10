@@ -33,15 +33,15 @@ vec2 rand(vec2 coord) {
                      2.0 -
                  1.0;
 
-    noiseX = clamp(fract(sin(dot(coord, vec2(12.9898, 78.233))) * 43758.5453),
-                   0.0, 1.0) *
-                 2.0 -
-             1.0;
-    noiseY =
-        clamp(fract(sin(dot(coord, vec2(12.9898, 78.233) * 2.0)) * 43758.5453),
-              0.0, 1.0) *
-            2.0 -
-        1.0;
+  noiseX = clamp(fract(sin(dot(coord, vec2(12.9898, 78.233))) * 43758.5453),
+                 0.0, 1.0) *
+               2.0 -
+           1.0;
+  noiseY =
+      clamp(fract(sin(dot(coord, vec2(12.9898, 78.233) * 2.0)) * 43758.5453),
+            0.0, 1.0) *
+          2.0 -
+      1.0;
 
   return vec2(noiseX, noiseY) * noiseamount;
 }

@@ -59,7 +59,7 @@ public:
   glm::mat4 view_matrix;
   glm::mat4 projection_matrix;
 
-  int color_mode = 6;
+  int color_mode = 9;
   int render_mode = 1;
   float attract_repel = 1.0f;
   bool pipe = false;
