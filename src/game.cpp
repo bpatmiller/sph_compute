@@ -29,7 +29,7 @@ void Game::create_sphere(float Radius, std::vector<glm::vec3> &s_vertices) {
 void Game::init() {
   // basic simulation settings
   simulation.h = 0.1f;
-  simulation.box_scale = 2.0f;
+  simulation.box_scale = 1.5f;
   render_mode = 2;
 
   // 2400 particles
@@ -49,7 +49,7 @@ void Game::init() {
   // PHYSICS_STEPS = 1;
 
   // set camera focus
-  focus = simulation.dimensions * simulation.h * simulation.box_scale * 0.25f;
+  focus = simulation.dimensions * simulation.h * simulation.box_scale * 0.5f;
   focus.y *= 0.5f;
 
   // compile programs
@@ -69,9 +69,9 @@ void Game::init() {
       {1.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 1.0f},
       {1.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}};
   for (auto &v : pool_vertices) {
-    v.x *= simulation.dimensions.x * simulation.h * simulation.box_scale * 0.5f;
-    v.y *= simulation.dimensions.y * simulation.h * simulation.box_scale * 0.5f;
-    v.z *= simulation.dimensions.z * simulation.h * simulation.box_scale * 0.5f;
+    v.x *= simulation.dimensions.x * simulation.h * simulation.box_scale;
+    v.y *= simulation.dimensions.y * simulation.h * simulation.box_scale;
+    v.z *= simulation.dimensions.z * simulation.h * simulation.box_scale;
   }
   pool_indices = {{0, 1, 2}, {1, 3, 2}, {4, 6, 5}, {5, 6, 7},
                   {0, 5, 1}, {0, 4, 5}, {2, 3, 7}, {2, 7, 6},
@@ -124,7 +124,7 @@ void Game::init() {
   // }
 
   // some gl settings
-  glClearColor(0.85f, 0.85f, 0.85f, 0.85f);
+  glClearColor(0.85f, 0.85f, 0.85f, 0.0f);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
   glEnable(GL_BLEND);
@@ -222,11 +222,12 @@ void Game::update() {
     fluid_compute_force.setFloat("SURF", simulation.SURF);
     fluid_compute_force.setVec3("repulser", repulser);
     fluid_compute_force.setFloat("attract_repel", attract_repel);
+    fluid_compute_force.setBool("pipe", pipe);
+    fluid_compute_force.setVec3("focus", focus);
     glDispatchCompute(simulation.particles.size(), 1, 1);
 
     // integrate
     fluid_integrate.use();
-    fluid_integrate.setFloat("time", glfwGetTime());
     fluid_integrate.setInt("particles_size", simulation.particles.size());
     fluid_integrate.setInt("num_cells", simulation.num_cells);
     fluid_integrate.setFloat("MASS", simulation.MASS);

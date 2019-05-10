@@ -64,7 +64,7 @@ void main() {
   // check if put into inlet pipe
   vec3 p_pos = particles[i].position;
   if (pipe) {
-    if (p_pos.y < EPS &&
+    if (p_pos.y < 5.0 * EPS &&
         pow(p_pos.x - focus.x, 2) + pow(p_pos.z - focus.z, 2) < 0.025) {
 
       float offset_y = p_pos.x - focus.x;
@@ -74,9 +74,10 @@ void main() {
       p.position.y = 3.0 * focus.y + offset_y;
       p.position.z = focus.z + offset_z;
 
+      float vx = - 3.0 * p.velocity.y;
+      p.velocity.y = p.velocity.x * 0.05;
+      p.velocity.x = vx;
       p.velocity.z *= 0.05;
-      p.velocity.y *= 0.05;
-      p.velocity.x += 3.0;
     }
   }
   // check collisions - FIXME abstract this now, for now
@@ -84,13 +85,13 @@ void main() {
   for (uint var = 0; var < 3; var++) {
     if (p_pos[var] < 0) {
       p.position[var] = EPS;
-      p.velocity *= damping;
-      p.velocity[var] *= -1.0;
+      // p.velocity *= damping;
+      p.velocity[var] *= -1.0 * damping;
 
     } else if (p_pos[var] > box_dimensions[var]) {
       p.position[var] = box_dimensions[var] - EPS;
       p.velocity *= damping;
-      p.velocity[var] *= -1.0;
+      p.velocity[var] *= -1.0 * damping;
     }
   }
 

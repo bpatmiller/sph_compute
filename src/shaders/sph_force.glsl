@@ -33,6 +33,8 @@ uniform float VISC;
 uniform float SURF;
 uniform vec3 repulser;
 uniform float attract_repel;
+uniform bool pipe;
+uniform vec3 focus;
 
 vec3 spiky_grad(vec3 r, float l) {
   return normalize(r) * pow(h - length(r), 2.0) * (45.0 / (PI * pow(h, 6)));
@@ -105,8 +107,16 @@ void main() {
     vec3 d = (p.position - repulser) * 0.1;
     float r = length(d);
     if (r < h && 0 < r) {
-      float rep_coef = 0.0125;
-      force += spiky_grad(attract_repel * d, r) * rep_coef;
+      force += spiky_grad(attract_repel * d, r) * 0.0125;
+    }
+  }
+
+  if (pipe) {
+    vec3 pipe_pos = vec3(focus.x, 0, focus.z);
+    vec3 d = (p.position - pipe_pos ) * 0.1;
+    float r = length(d);
+    if (r < h && 0 < r) {
+      force += spiky_grad(-d, r) * 0.005;
     }
   }
 
