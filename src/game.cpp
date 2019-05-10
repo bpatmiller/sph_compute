@@ -27,35 +27,38 @@ void Game::create_sphere(float Radius, std::vector<glm::vec3> &s_vertices) {
 }
 
 void Game::init() {
-  // 2400 particles
-  simulation.dimensions = glm::vec3(20, 15, 8);
-  PHYSICS_STEPS = 10;
+  // basic simulation settings
   simulation.h = 0.1f;
   simulation.box_scale = 2.0f;
   render_mode = 2;
 
   // 2400 particles
+  simulation.dimensions = glm::vec3(20, 15, 8);
+  PHYSICS_STEPS = 10;
+
+  // 6000 particles
+  // simulation.dimensions = glm::vec3(30, 20, 10);
+  // PHYSICS_STEPS = 10;
+
+  // 10,000 particles
   // simulation.dimensions = glm::vec3(25, 20, 20);
   // PHYSICS_STEPS = 5;
-  // simulation.h = 0.1f;
-  // simulation.box_scale = 2.0f;
-  // render_mode = 2;
 
   // set camera focus
   focus = simulation.dimensions * simulation.h * simulation.box_scale * 0.25f;
-  focus.y *= 0.1f;
+  focus.y *= 0.2f;
 
   // compile programs
-  pool_program = Program("src/shaders/pool.vert", "src/shaders/pool.geom",
-                         "src/shaders/pool.frag", "");
+  pool_program = Program("src/shaders/pool.vs", "",
+                         "src/shaders/pool.fs", "");
   fluid_program =
-      Program("src/shaders/cube.vert", "", "src/shaders/cube.frag", "");
+      Program("src/shaders/particle.vs", "", "src/shaders/particle.fs", "");
   fluid_compute_dens = Program("", "", "", "src/shaders/sph_dens_pres.glsl");
   fluid_compute_force = Program("", "", "", "src/shaders/sph_force.glsl");
   fluid_integrate = Program("", "", "", "src/shaders/sph_integrate.glsl");
   fluid_compute_norm_vel = Program("", "", "", "src/shaders/sph_norm_vel.glsl");
   tex_quad_program =
-      Program("src/shaders/fxaa.vert", "", "src/shaders/fxaa.frag", "");
+      Program("src/shaders/ssao.vs", "", "src/shaders/ssao.fs", "");
 
   // init pool
   std::vector<glm::vec3> pool_vertices = {
@@ -67,7 +70,7 @@ void Game::init() {
     v.y *= simulation.dimensions.y * simulation.h * simulation.box_scale * 0.5f;
     v.z *= simulation.dimensions.z * simulation.h * simulation.box_scale * 0.5f;
   }
-  pool_indices = {{0, 1, 2}, {1, 3, 2}, {0, 5, 1}, {0, 4, 5}, {2, 3, 7},
+  pool_indices = {{0, 1, 2}, {1, 3, 2}, {4, 6, 5}, {5, 6, 7}, {0, 5, 1}, {0, 4, 5}, {2, 3, 7},
                   {2, 7, 6}, {3, 1, 5}, {3, 5, 7}, {0, 2, 6}, {0, 6, 4}};
   pool.setLayout({3}, false);
   pool.vb.set(pool_vertices);
@@ -115,7 +118,6 @@ void Game::init() {
   }
 
   // some gl settings
-  glClearColor(0.9f, 0.9f, 0.9f, 0.0f);
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
@@ -123,6 +125,7 @@ void Game::init() {
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glDepthFunc(GL_LESS);
   glCullFace(GL_BACK);
+  glLineWidth(5.0f);
 }
 
 void Game::update() {
@@ -165,7 +168,9 @@ void Game::update() {
 
   // handle keypress
   if (keyHeld[GLFW_KEY_W]) {
-    base_eye.z -= 0.1f;
+    if (base_eye.z > 0.2f) {
+      base_eye.z -= 0.1f;
+    }
   }
   if (keyHeld[GLFW_KEY_S]) {
     base_eye.z += 0.1f;
@@ -243,6 +248,7 @@ void Game::update() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   // render the pool
+  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   pool_program.use();
   pool_program.setMat4("projection", projection_matrix);
   pool_program.setMat4("view", view_matrix);
@@ -251,6 +257,7 @@ void Game::update() {
                  pool_indices.data());
 
   // render the fluids
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   fluid_program.use();
   fluid_program.setMat4("projection", projection_matrix);
   fluid_program.setMat4("view", view_matrix);
@@ -280,7 +287,7 @@ void Game::update() {
 void Game::update_camera() {
   if (glm::length(mouse_diff) == 0)
     return;
-  mouse_diff *= -0.001f;
+  mouse_diff *= -0.005f;
 
   pitch = std::max(-1.5f, std::min(1.5f, pitch + mouse_diff.y));
   yaw += mouse_diff.x;
@@ -316,8 +323,6 @@ bool Game::intersect_sphere(glm::vec3 ray_direction, glm::vec3 p) {
   return true;
 }
 
-float Game::intersect_plane(glm::vec3 ray_direction) { return 0.0f; }
-
 void Game::mouse_ray_intersect() {
   glm::uvec4 viewport = glm::uvec4(0, 0, window_width, window_height);
   glm::vec2 mp = glm::vec2(mouse_pos.x, window_height - mouse_pos.y);
@@ -325,9 +330,6 @@ void Game::mouse_ray_intersect() {
       glm::vec4(glm::normalize(screenspace_to_world(mp, viewport)), 0.0f);
 
   // ray - particle intersection
-  // phasing out in favor of more
-  // efficient design
-  // repulser = glm::vec3(-99, -99, -99);
   for (uint i = 0; i < simulation.particles.size(); i++) {
     // check if ray intersects particle
     Particle &p = simulation.particles[i];
@@ -336,7 +338,4 @@ void Game::mouse_ray_intersect() {
       break;
     }
   }
-
-  // ray ground intersection
-  // FIXME add support
 }

@@ -15,7 +15,7 @@ float zNear = 0.1;
 float zFar = 20.0;
 float strength = 1.0;
 
-int samples = 16;   // ao sample count //64.0
+int samples = 8;   // ao sample count //64.0
 float radius = 5.0; // ao radius //5.0
 
 float aoclamp = 0.125;      // depth clamp - reduces haloing at screen edges
