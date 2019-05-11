@@ -1,4 +1,4 @@
-# my physical sim
+# sph_compute
 
 to build:
 make build
