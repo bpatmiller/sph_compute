@@ -46,7 +46,9 @@ void main() {
   }
   // normals
   else if (color_mode == 7) {
-    v_color = normalize(abs(normal));
+    // v_color = normalize(abs(normal));
+    float n = normalize(normal).y;
+    v_color = mix(vec3(0.6, 0.6, 0.6), vec3(0.8, 0.1, 0.1), n);
   }
   // velocity
   else if (color_mode == 8) {

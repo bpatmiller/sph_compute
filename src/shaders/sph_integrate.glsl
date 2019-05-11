@@ -48,18 +48,14 @@ void main() {
   uint i = gl_WorkGroupID.x;
   Particle p = particles[i];
 
-  // integrate with verlet(?)
-  vec3 new_accel = p.force / MASS;
-  p.velocity += timestep * ((new_accel + p.acceleration) * 0.5f);
-  p.position +=
-      (timestep * p.velocity) + (p.acceleration * timestep * timestep * 0.5f);
-  p.acceleration = new_accel;
+  // verlet integration
+  vec3 new_pos = p.position + p.velocity*timestep + (p.acceleration * timestep * timestep * 0.5f);
+  vec3 new_acc = p.force / MASS;
+  vec3 new_vel = p.velocity + (p.acceleration + new_acc) * (0.5 * timestep);
+  p.position = new_pos;
+  p.velocity = new_vel;
+  p.acceleration = new_acc;
 
-  // potentially use leapfrog
-  //  p.acceleration = p.force / MASS;
-  // p.velocity += timestep * 0.5f * p.acceleration;
-  // p.position += timestep * p.velocity;
-  // p.velocity += timestep * 0.5f * p.acceleration;
 
   // check if put into inlet pipe
   vec3 p_pos = particles[i].position;
