@@ -63,6 +63,7 @@ public:
   int render_mode = 1;
   float attract_repel = 1.0f;
   bool pipe = false;
+  bool law = false;
   glm::vec3 repulser = glm::vec3(-99, -99, -99);
 
   // fluid programs/ssbo/indices/SPH object

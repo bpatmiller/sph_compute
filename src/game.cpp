@@ -182,6 +182,7 @@ void Game::update() {
     fluid_compute_dens.setFloat("GAS_CONST", simulation.GAS_CONST);
     fluid_compute_dens.setFloat("REST_DENS", simulation.REST_DENSITY);
     fluid_compute_dens.setFloat("h", simulation.h);
+    fluid_compute_dens.setBool("law", law);
     glDispatchCompute(simulation.particles.size(), 1, 1);
 
     // compute normals and TODO smooth velocities

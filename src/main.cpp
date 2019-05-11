@@ -28,6 +28,14 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action,
   if (key == GLFW_KEY_O && action == GLFW_RELEASE) {
     game->simulation.init();
   }
+    if (key == GLFW_KEY_L && action == GLFW_RELEASE) {
+      if (game->law) {
+        std::cout << "turning on tate equation" << std::endl;
+      } else {
+        std::cout << "turning on ideal gas law" << std::endl;
+      }
+   game->law = !game->law;
+  }
   // color modes
   if (key == GLFW_KEY_1) {
     game->color_mode = 1;

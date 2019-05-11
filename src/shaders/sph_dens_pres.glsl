@@ -29,6 +29,7 @@ uniform float h;
 uniform float MASS;
 uniform float GAS_CONST;
 uniform float REST_DENS;
+uniform bool law;
 
 float poly6(float r) {
   return 315.0f * pow(h * h - r * r, 3.0f) / (64.0f * PI * pow(h, 9.0f));
@@ -64,7 +65,9 @@ void main() {
   }
 
   particles[i].density = dens;
-  // particles[i].pressure = GAS_CONST * (dens - REST_DENS);
-  particles[i].pressure = GAS_CONST * ( pow(dens / REST_DENS, 7) -1 );
-
+  if (law) {
+    particles[i].pressure = GAS_CONST * (dens - REST_DENS);
+  } else {
+  particles[i].pressure = GAS_CONST * 0.0000075f * ( pow(dens / REST_DENS, 3) -1.0 );
+  }
 }
