@@ -64,5 +64,7 @@ void main() {
   }
 
   particles[i].density = dens;
-  particles[i].pressure = GAS_CONST * (dens - REST_DENS);
+  // particles[i].pressure = GAS_CONST * (dens - REST_DENS);
+  particles[i].pressure = GAS_CONST * ( pow(dens / REST_DENS, 7) -1 );
+
 }
