@@ -33,16 +33,16 @@ void Game::init() {
   render_mode = 2;
 
   // 2400 particles
-  // simulation.dimensions = glm::vec3(20, 15, 8);
-  // PHYSICS_STEPS = 10;
+  simulation.dimensions = glm::vec3(20, 15, 8);
+  PHYSICS_STEPS = 10;
 
   // 4800 particles
   // simulation.dimensions = glm::vec3(40, 15, 8);
   // PHYSICS_STEPS = 5;
 
   // 6000 particles
-  simulation.dimensions = glm::vec3(30, 20, 10);
-  PHYSICS_STEPS = 2;
+  // simulation.dimensions = glm::vec3(30, 20, 10);
+  // PHYSICS_STEPS = 2;
 
   // 10,000 particles
   // simulation.dimensions = glm::vec3(25, 20, 20);
@@ -84,7 +84,7 @@ void Game::init() {
 
   // init sphere, pass particle instances
   std::vector<glm::vec3> sphere_vertices;
-  create_sphere(simulation.h * 0.25f, sphere_vertices);
+  create_sphere(simulation.h * 0.5f, sphere_vertices);
   fluid.setLayout({3}, false);
   fluid.setLayout({3, 1, 3, 1, 3, 1, 3, 1, 3, 1}, true);
   fluid.vb.set(sphere_vertices);
@@ -108,20 +108,6 @@ void Game::init() {
   // quad vao
   texquad.setLayout({3}, false);
   texquad.vb.set(tq_vertices);
-
-  // init ssao kernel
-  // FIXME remove this
-  // from old implimentation
-  // ssao_kernel.reserve(ssao_kernel_size);
-  // for (uint i = 0; i < ssao_kernel_size; i++) {
-  //   // generate points on hemisphere
-  //   ssao_kernel[i] = glm::sphericalRand(1.0f);
-  //   ssao_kernel[i].z = glm::abs(ssao_kernel[i].z);
-  //   // scale within hemisphere
-  //   float scale = float(i) / float(ssao_kernel_size);
-  //   scale = glm::mix(0.1f, 1.0f, scale * scale);
-  //   ssao_kernel[i] *= scale;
-  // }
 
   // some gl settings
   glClearColor(0.85f, 0.85f, 0.85f, 0.0f);

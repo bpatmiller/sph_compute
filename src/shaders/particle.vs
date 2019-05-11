@@ -58,6 +58,6 @@ void main() {
     //     mix(vec3(0.6, 0.6, 0.6), vec3(0.8, 0.1, 0.1), length(velocity) *
     //     0.25);
     v_color =
-        mix(vec3(0.2, 0.4, 0.65), vec3(0.1, 0.7, 0.3), length(velocity) * 0.25);
+        mix(vec3(0.2, 0.4, 0.65), vec3(0.1, 0.7, 0.3), length(velocity) * 0.5);
   }
 }

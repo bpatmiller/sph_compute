@@ -15,8 +15,8 @@ float zNear = 0.01;
 float zFar = 20.0;
 float strength = 1.0;
 
-int samples = 32;
-float radius = 15.0;
+int samples = 16;
+float radius = 5.0;
 float aoclamp = 0.125;
 float noiseamount = 0.0002;
 float diffarea = 0.3;

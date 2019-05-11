@@ -113,7 +113,7 @@ void main() {
 
   if (pipe) {
     vec3 pipe_pos = vec3(focus.x, 0, focus.z);
-    vec3 d = (pipe_pos - p.position ) * 0.2;
+    vec3 d = (pipe_pos - p.position) * 0.2;
     float r = length(d);
     if (r < h && 0 < r) {
       force += spiky_grad(d, r) * 0.0025;
