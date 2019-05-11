@@ -11,18 +11,21 @@ void SPH::init() {
   std::cout << "Intilizing SPH with " << num_cells << " particles" << std::endl;
 
   box_dimensions = dimensions * h * box_scale * 1.0f;
-  glm::vec3 offset = (0.5f * dimensions * h * (box_scale - 1)) + glm::vec3(0.25f * h);
+  glm::vec3 offset =
+      (0.5f * dimensions * h * (box_scale - 1)) + glm::vec3(0.25f * h);
 
   for (int x = 0; x < dimensions.x; x++) {
     for (int y = 0; y < dimensions.y; y++) {
       for (int z = 0; z < dimensions.z; z++) {
-        float jitterx = 0.01f* static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-        float jittery = 0.01f* static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-        float jitterz = 0.01f* static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+        float jitterx =
+            0.01f * static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+        float jittery =
+            0.01f * static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+        float jitterz =
+            0.01f * static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 
-        Particle p(offset + glm::vec3(h * x + jitterx,
-                                       h * y + jittery,
-                                       h * z + jitterz));
+        Particle p(offset + glm::vec3(h * x + jitterx, h * y + jittery,
+                                      h * z + jitterz));
         p._pad1 = static_cast<float>(x) / dimensions.x;
         particles.emplace_back(p);
       }
