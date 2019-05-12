@@ -22,14 +22,9 @@ layout(std430, binding = 1) buffer HashToIndexBlock { int HashToIndex[]; };
 
 const float PI = 3.1415927410125732421875f;
 
-uniform int particles_size;
 uniform int num_cells;
-uniform float time;
 uniform float h;
 uniform float MASS;
-uniform float GAS_CONST;
-uniform float REST_DENS;
-uniform float VISC;
 uniform float timestep;
 uniform vec3 box_dimensions;
 uniform vec3 focus;
@@ -49,13 +44,13 @@ void main() {
   Particle p = particles[i];
 
   // verlet integration
-  vec3 new_pos = p.position + p.velocity*timestep + (p.acceleration * timestep * timestep * 0.5f);
+  vec3 new_pos = p.position + p.velocity * timestep +
+                 (p.acceleration * timestep * timestep * 0.5f);
   vec3 new_acc = p.force / MASS;
   vec3 new_vel = p.velocity + (p.acceleration + new_acc) * (0.5 * timestep);
   p.position = new_pos;
   p.velocity = new_vel;
   p.acceleration = new_acc;
-
 
   // check if put into inlet pipe
   vec3 p_pos = particles[i].position;
