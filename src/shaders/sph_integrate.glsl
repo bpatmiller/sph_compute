@@ -89,7 +89,7 @@ void main() {
     }
   }
 
-  p._pad0 = HashToIndex[int(p.hash)];
   p.hash = hash(p.position);
+  p._pad0 = HashToIndex[int(p.hash)];
   particles[i] = p;
 }
