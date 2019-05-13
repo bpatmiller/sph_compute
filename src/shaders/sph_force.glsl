@@ -120,5 +120,5 @@ void main() {
     }
   }
 
-  particles[i].force = force;
+  particles[i].force = clamp(force, -10000.0, 10000.0);
 }
