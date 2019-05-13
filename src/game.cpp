@@ -33,12 +33,12 @@ void Game::init() {
   render_mode = 2;
 
   // 2400 particles
-  simulation.dimensions = glm::vec3(10, 15, 8);
-  PHYSICS_STEPS = 10;
+  // simulation.dimensions = glm::vec3(10, 15, 8);
+  // PHYSICS_STEPS = 10;
 
   // 4800 particles
-  // simulation.dimensions = glm::vec3(40, 15, 8);
-  // PHYSICS_STEPS = 5;
+  simulation.dimensions = glm::vec3(40, 15, 8);
+  PHYSICS_STEPS = 5;
 
   // 6000 particles
   // simulation.dimensions = glm::vec3(20, 20, 20);
@@ -54,6 +54,8 @@ void Game::init() {
 
   // compile programs
   pool_program = Program("src/shaders/pool.vs", "", "src/shaders/pool.fs", "");
+  skybox_program =
+      Program("src/shaders/skybox.vs", "", "src/shaders/skybox.fs", "");
   fluid_program =
       Program("src/shaders/particle.vs", "", "src/shaders/particle.fs", "");
   fluid_compute_dens = Program("", "", "", "src/shaders/sph_dens_pres.glsl");
@@ -78,6 +80,18 @@ void Game::init() {
                   {3, 1, 5}, {3, 5, 7}, {0, 2, 6}, {0, 6, 4}};
   pool.setLayout({3}, false);
   pool.vb.set(pool_vertices);
+
+  // init skybox
+  std::vector<glm::vec3> skybox_vertices = {
+      {-10.0f, -10.0f, -10.0f}, {-10.0f, -10.0f, 10.0f},
+      {10.0f, -10.0f, -10.0f},  {10.0f, -10.0f, 10.0f},
+      {-10.0f, 10.0f, -10.0f},  {-10.0f, 10.0f, 10.0f},
+      {10.0f, 10.0f, -10.0f},   {10.0f, 10.0f, 10.0f}};
+  skybox_indices = {{0, 1, 2}, {1, 3, 2}, {4, 6, 5}, {5, 6, 7},
+                    {0, 5, 1}, {0, 4, 5}, {2, 3, 7}, {2, 7, 6},
+                    {3, 1, 5}, {3, 5, 7}, {0, 2, 6}, {0, 6, 4}};
+  skybox.setLayout({3}, false);
+  skybox.vb.set(skybox_vertices);
 
   // init particles
   simulation.init();
@@ -110,7 +124,7 @@ void Game::init() {
   texquad.vb.set(tq_vertices);
 
   // some gl settings
-  glClearColor(0.85f, 0.85f, 0.85f, 0.0f);
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
   glEnable(GL_BLEND);
@@ -134,7 +148,7 @@ void Game::update() {
       focus + glm::vec3(glm::mat4_cast(orientation) * glm::vec4(base_eye, 1.0));
   view_matrix = glm::lookAt(eye, focus, UP);
   projection_matrix = glm::perspective(
-      glm::radians(60.0f), ((float)window_width) / window_height, 0.01f, 20.f);
+      glm::radians(60.0f), ((float)window_width) / window_height, 0.01f, 30.f);
 
   // handle mouse movement
   bool first = (mouse_pos_prev == glm::vec2(-1, -1));
@@ -242,6 +256,15 @@ void Game::update() {
   glViewport(0, 0, window_width, window_height);
   r_tex.bind();
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  // render the skybox
+  skybox_program.use();
+  skybox_program.setMat4("projection", projection_matrix);
+  skybox_program.setMat4("view", view_matrix);
+  skybox_program.setVec3("camera_position", eye);
+  skybox.bind();
+  glDrawElements(GL_TRIANGLES, skybox_indices.size() * 3, GL_UNSIGNED_INT,
+                 skybox_indices.data());
 
   // render the pool
   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

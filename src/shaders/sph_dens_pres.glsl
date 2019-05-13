@@ -68,6 +68,7 @@ void main() {
   if (law) {
     particles[i].pressure = GAS_CONST * (dens - REST_DENS);
   } else {
-  particles[i].pressure = GAS_CONST * 0.0000075f * ( pow(dens / REST_DENS, 3) -1.0 );
+    particles[i].pressure =
+        GAS_CONST * 0.0000075f * (pow(dens / REST_DENS, 3) - 1.0);
   }
 }

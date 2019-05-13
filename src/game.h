@@ -85,9 +85,13 @@ public:
   VAO pool;
   std::vector<glm::uvec3> pool_indices;
 
+  // skybox program/vao
+  Program skybox_program;
+  VAO skybox;
+  std::vector<glm::uvec3> skybox_indices;
+
   // texture quad vertices and vao
   RenderTexture r_tex;
-
   Program tex_quad_program;
   VAO texquad;
   std::vector<glm::vec3> tq_vertices = {

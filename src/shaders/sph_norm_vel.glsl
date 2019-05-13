@@ -30,7 +30,7 @@ uniform float MASS;
 uniform float GAS_CONST;
 uniform float REST_DENS;
 
-float poly6_grad(vec3 r, float l) {
+vec3 poly6_grad(vec3 r, float l) {
   return (-945.0f / (32 * PI * pow(h, 9))) * r *
          pow((pow(h, 2) - pow(l, 2)), 2);
 }

@@ -12,7 +12,7 @@ float width = resolution.x;
 float height = resolution.y;
 
 float zNear = 0.01;
-float zFar = 20.0;
+float zFar = 30.0;
 float strength = 1.0;
 
 int samples = 16;
@@ -102,7 +102,7 @@ float calAO(float depth, float dw, float dh) {
 
 void main(void) {
   if (renderMode == 1 || texture2D(screenTex, uv).w != 1.0) {
-    fragment_color = texture2D(screenTex, uv);
+    fragment_color = vec4(texture2D(screenTex, uv).rgb, 1.0);
     return;
   }
 

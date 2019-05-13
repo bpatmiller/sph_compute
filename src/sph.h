@@ -13,7 +13,7 @@ struct Particle {
   float pressure = 0; // 8
   glm::vec3 acceleration = glm::vec3(0);
   float hash = 0; // 12
-  glm::vec3 force;
+  glm::vec3 force = glm::vec3(0);
   float _pad0 = 0; // 16 informally defines the index of the first instance
   glm::vec3 normal = glm::vec3(0);
   float _pad1 = 0; // 20 informally defines starting color
